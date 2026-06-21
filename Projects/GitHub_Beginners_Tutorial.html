@@ -358,6 +358,8 @@
 
     <li><div class="section-label">Reference</div></li>
     <li><a href="#ide-reference">IDE Action Reference</a></li>
+    <li><a href="#pitfalls">Common Pitfalls</a></li>
+    <li><a href="#pitfalls" class="sub-link">The Three Layers</a></li>
     <li><a href="#troubleshooting">Troubleshooting</a></li>
     <li><a href="#habits">Good Habits</a></li>
   </ul>
@@ -1070,6 +1072,104 @@
 
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="pitfalls">Common Pitfalls</h2>
+
+  <p>
+    GitHub has a reputation for being confusing, and not without reason. It was built by and
+    for people who already understood version control — and it never quite stopped assuming
+    you do too. These are the mistakes almost everyone makes in the first few weeks.
+  </p>
+
+  <h3>The Three Layers Nobody Explains</h3>
+  <p>
+    The root cause of most GitHub confusion is that there are three separate places your
+    files can live, and actions move things between them:
+  </p>
+  <table class="ref-table">
+    <thead><tr><th>Layer</th><th>Where</th><th>How to get there</th></tr></thead>
+    <tbody>
+      <tr><td>Your files on disk</td><td>Your computer — visible in Finder</td><td>Just editing normally</td></tr>
+      <tr><td>Your local Git repo</td><td>Your computer — hidden inside the project folder</td><td>Committing</td></tr>
+      <tr><td>GitHub</td><td>The cloud</td><td>Pushing</td></tr>
+    </tbody>
+  </table>
+  <p>
+    When something "isn't showing up" somewhere, the answer is almost always that you moved
+    it one layer but not the other. The fix is always the same: figure out which layer it's
+    stuck in and do the next step.
+  </p>
+
+  <h3>"I committed but my teammate can't see it"</h3>
+  <p>
+    This is the most common mistake of all. <strong>Committing saves your work locally.
+    Pushing sends it to GitHub.</strong> They are two separate steps, and it's easy to
+    do the first and forget the second — especially because committing <em>feels</em>
+    like saving.
+  </p>
+  <p>
+    The fix: get into the habit of using <strong>Commit and Push…</strong> as a single
+    action instead of committing and pushing separately. In Rider and CLion, this is one
+    button in the Commit panel. It does both in one step.
+  </p>
+  <div class="tip">
+    When you sit down to work, Pull first. When you finish work, Commit and Push.
+    If you make those two habits automatic, most GitHub problems disappear entirely.
+  </div>
+
+  <h3>"I pulled and it says 'already up to date' but I still can't see the file"</h3>
+  <p>
+    This usually means one of two things:
+  </p>
+  <ul>
+    <li><strong>The file was committed but never pushed</strong> — on the other machine,
+        check that the commit was actually pushed to GitHub, not just saved locally.</li>
+    <li><strong>Rider's project view needs a refresh</strong> — the file may be on disk
+        but the IDE hasn't noticed it yet. Right-click the folder in the Project panel
+        and choose <strong>Reload from Disk</strong>.</li>
+  </ul>
+
+  <h3>"My push was rejected"</h3>
+  <p>
+    This almost always means someone (or another machine) pushed a commit to GitHub since
+    you last pulled. GitHub won't let you push if your local history is behind. The fix
+    is to <strong>Pull first</strong>, let the IDE merge the changes, then Push again.
+  </p>
+  <div class="warn">
+    Never click "Force Push" when this happens. Force push overwrites the remote history
+    and can permanently erase work. Always pull first.
+  </div>
+
+  <h3>"I created the repo with a README and now the push is rejected"</h3>
+  <p>
+    When you create a GitHub repo with a README, it already has one commit. When you try
+    to push a local project that has its own commits, GitHub sees two unrelated histories
+    and rejects the push. The simplest fix: delete the README.md from github.com
+    (open the file → trash icon → commit the deletion), making the repo empty,
+    then push from your IDE.
+  </p>
+  <p>
+    To avoid this entirely: <strong>never check "Add a README" when creating a repo
+    that you plan to push local files into.</strong> Only use it when starting a brand
+    new project from scratch on GitHub.
+  </p>
+
+  <h3>"GitHub's website is overwhelming"</h3>
+  <p>
+    It is. GitHub serves solo developers, startups, and enormous engineering organisations
+    all on the same interface. For your day-to-day work, you only ever need three things
+    on the website:
+  </p>
+  <ul>
+    <li>Creating a new repository</li>
+    <li>Opening a Pull Request after pushing a branch</li>
+    <li>Merging a Pull Request once it's reviewed</li>
+  </ul>
+  <p>
+    Actions, Issues, Discussions, Projects, Marketplace, Sponsors, Copilot, Pages —
+    ignore all of it until you need it. Most people never do.
+  </p>
+
   <h2 id="troubleshooting">Troubleshooting</h2>
 
   <h3>I committed to main by mistake</h3>
