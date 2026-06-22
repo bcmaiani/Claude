@@ -545,6 +545,36 @@ int main() {
   <strong>Modern alternative</strong>
   <code>std::optional&lt;T&gt;</code> (C++17) expresses "a value or nothing" without raw pointers and makes the intent explicit in the type. Prefer it over returning a nullable pointer when ownership is not involved.
 </div>
+
+<div class="qa-answer">
+  <div class="qa-q">Q: In C#, findUser would return User (no * or &amp;). Is returning by plain value ever possible in C++?</div>
+  <p>Yes — <code>User findUser(...)</code> is perfectly valid C++ syntax. The function would return a full copy of the found object. The problem is the "not found" case: with a value return type there is no <code>nullptr</code> to return, and returning a default-constructed <code>User{}</code> is ambiguous (is that a real result, or a sentinel meaning "nothing"?).</p>
+  <p>That is precisely why the example uses <code>const User*</code> — the pointer's ability to be <code>nullptr</code> is doing the real work. C++ has two idiomatic alternatives that avoid raw pointers:</p>
+  <p><strong><code>std::optional&lt;User&gt;</code> (C++17) — the preferred modern approach.</strong> It wraps a value that may or may not be present, making the optionality explicit in the type without heap allocation or pointer syntax:</p>
+  <pre><code class="language-cpp">#include &lt;optional&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;iostream&gt;
+
+struct User { std::string name; int age; };
+
+std::optional&lt;User&gt; findUser(const std::vector&lt;User&gt;&amp; users, int minAge) {
+    for (const auto&amp; u : users)
+        if (u.age &gt;= minAge) return u;   // wraps a copy of u
+    return std::nullopt;                  // explicit "nothing"
+}
+
+int main() {
+    std::vector&lt;User&gt; users = {{"Alice", 30}, {"Bob", 17}};
+    auto result = findUser(users, 18);
+    if (result)
+        std::cout &lt;&lt; "Found: " &lt;&lt; result-&gt;name &lt;&lt; '\n';
+    else
+        std::cout &lt;&lt; "No match\n";
+}</code></pre>
+  <p><strong>Throw an exception</strong> if "not found" is genuinely unexpected rather than a normal outcome — but for a search function it usually isn't, so <code>std::optional</code> is the right fit.</p>
+  <p>In summary: plain <code>User</code> return is legal but leaves you with no way to signal absence. <code>const User*</code> and <code>std::optional&lt;User&gt;</code> are the two idiomatic C++ answers to "maybe a User" — <code>std::optional</code> is generally preferred in modern C++ because it names the intent clearly without involving raw pointers.</p>
+</div>
 </section>
 
 <!-- ═══════════════════════════════════════════
