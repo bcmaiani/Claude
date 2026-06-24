@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C++ Pointer Arithmetic &amp; Iterators</title>
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #f7f7f7;
+      color: #1a1a1a;
+      line-height: 1.7;
+      display: flex;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────────────── */
+    #sidebar {
+      width: 240px;
+      min-width: 240px;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      overflow-y: auto;
+      background: #ffffff;
+      border-right: 1px solid #e4e4e4;
+      padding: 28px 0 40px;
+    }
+    #sidebar .logo {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #888;
+      padding: 0 22px 18px;
+      border-bottom: 1px solid #e4e4e4;
+      margin-bottom: 16px;
+    }
+    #sidebar ul { list-style: none; }
+    #sidebar ul li a {
+      display: block;
+      padding: 6px 22px;
+      font-size: 0.875rem;
+      color: #444;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+    #sidebar ul li a:hover { color: #0066cc; background: #f0f6ff; }
+    #sidebar ul li a.active { color: #0066cc; border-left-color: #0066cc; background: #f0f6ff; font-weight: 600; }
+    #sidebar ul li.sub a { padding-left: 36px; font-size: 0.825rem; }
+
+    /* ── Main content ─────────────────────────────────────────── */
+    #content {
+      flex: 1;
+      max-width: 820px;
+      padding: 48px 56px 80px;
+    }
+
+    /* ── Typography ───────────────────────────────────────────── */
+    h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; color: #0d0d0d; }
+    h2 { font-size: 1.4rem; font-weight: 700; margin-top: 56px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #e4e4e4; color: #0d0d0d; }
+    h3 { font-size: 1.05rem; font-weight: 700; margin-top: 32px; margin-bottom: 8px; color: #111; }
+    p { margin-bottom: 14px; }
+    ul, ol { margin: 10px 0 14px 22px; }
+    li { margin-bottom: 5px; }
+    strong { color: #111; }
+    a { color: #0066cc; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Inline code ──────────────────────────────────────────── */
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.875em;
+      background: #f0f0f0;
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: #c7254e;
+    }
+
+    /* ── Code blocks ──────────────────────────────────────────── */
+    pre {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 18px 0 22px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.875rem;
+      line-height: 1.65;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* Syntax colors (Catppuccin-ish Mocha) */
+    .kw  { color: #cba6f7; }
+    .ty  { color: #89b4fa; }
+    .fn  { color: #89dceb; }
+    .cm  { color: #6c7086; font-style: italic; }
+    .st  { color: #a6e3a1; }
+    .nu  { color: #fab387; }
+    .pp  { color: #f38ba8; }
+    .op  { color: #89b4fa; }
+
+    /* ── Callout boxes ────────────────────────────────────────── */
+    .callout {
+      border-left: 4px solid #0066cc;
+      background: #f0f6ff;
+      border-radius: 0 6px 6px 0;
+      padding: 14px 18px;
+      margin: 20px 0;
+    }
+    .callout.warn { border-color: #cc6600; background: #fff7f0; }
+    .callout.danger { border-color: #cc0000; background: #fff0f0; }
+    .callout.tip { border-color: #009966; background: #f0fff7; }
+    .callout-title {
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      color: #0066cc;
+    }
+    .callout.warn .callout-title { color: #cc6600; }
+    .callout.danger .callout-title { color: #cc0000; }
+    .callout.tip .callout-title { color: #009966; }
+
+    /* ── Comparison table ─────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0 22px;
+      font-size: 0.9rem;
+    }
+    th {
+      background: #f0f0f0;
+      text-align: left;
+      padding: 9px 14px;
+      border: 1px solid #ddd;
+      font-weight: 700;
+    }
+    td {
+      padding: 9px 14px;
+      border: 1px solid #ddd;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td { background: #fafafa; }
+
+    .subtitle { font-size: 1rem; color: #666; margin-bottom: 36px; }
+    .breadcrumb { font-size: 0.8rem; color: #888; margin-bottom: 6px; }
+    .breadcrumb a { color: #888; }
+    .breadcrumb a:hover { color: #0066cc; }
+  </style>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="logo">C++ Series</div>
+  <ul>
+    <li><a href="#intro">Introduction</a></li>
+    <li><a href="#memory-model">Memory &amp; the Address Model</a></li>
+    <li><a href="#arithmetic-basics">Arithmetic Basics</a></li>
+    <li class="sub"><a href="#increment-decrement">Increment &amp; Decrement</a></li>
+    <li class="sub"><a href="#subscript">Subscript Notation</a></li>
+    <li class="sub"><a href="#difference">Pointer Difference</a></li>
+    <li class="sub"><a href="#comparison">Pointer Comparison</a></li>
+    <li><a href="#one-past-end">The One-Past-The-End Rule</a></li>
+    <li><a href="#ub">Undefined Behavior</a></li>
+    <li><a href="#iterators">Iterators</a></li>
+    <li class="sub"><a href="#iter-intro">What Is an Iterator?</a></li>
+    <li class="sub"><a href="#iter-categories">Iterator Categories</a></li>
+    <li class="sub"><a href="#iter-algorithms">Iterators &amp; Algorithms</a></li>
+    <li><a href="#span">std::span</a></li>
+    <li><a href="#multidim">Multi-Dimensional Arrays</a></li>
+    <li><a href="#when-to-use">When to Use Which</a></li>
+    <li><a href="#appendix">Appendix: C++ vs C#</a></li>
+    <li><a href="#summary">Summary</a></li>
+  </ul>
+</nav>
+
+<main id="content">
+
+  <p class="breadcrumb"><a href="#">C++ Series</a> › Part 2</p>
+  <h1>Pointer Arithmetic &amp; Iterators</h1>
+  <p class="subtitle">How C++ navigates memory — and how the STL builds on it.</p>
+
+  <section id="intro">
+    <h2>Introduction</h2>
+    <p>The previous tutorial established what pointers and references <em>are</em> — handles to memory locations. This tutorial is about what you can <em>do</em> with pointers once you have one.</p>
+    <p>The surprising answer is: arithmetic. You can add and subtract integers from pointers the same way you add and subtract from numbers. Increment a pointer and it steps forward to the <em>next object</em> of its type, not the next byte. This is the mechanism that makes arrays, string traversal, and the entire C++ standard library possible.</p>
+    <p>The second half of the tutorial shows how the STL formalizes this idea into <strong>iterators</strong> — a set of types and conventions that let every algorithm work uniformly with every container, whether the underlying storage is a plain array, a linked list, or something more exotic.</p>
+    <div class="callout tip">
+      <div class="callout-title">Prerequisites</div>
+      This tutorial assumes you have read <em>Pointers and References in C++</em> (Part 1 of this series). Terms like "raw pointer," "dereference," and "stack vs. heap" are used without re-introduction.
+    </div>
+  </section>
+
+  <section id="memory-model">
+    <h2>Memory &amp; the Address Model</h2>
+    <p>Before arithmetic makes sense, it helps to picture what memory actually looks like at runtime.</p>
+    <p>Think of memory as a very long strip of numbered cells, each holding one byte. When you declare:</p>
+<pre><code><span class="kw">int</span> arr[<span class="nu">4</span>] = {<span class="nu">10</span>, <span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">40</span>};</code></pre>
+    <p>The compiler reserves four consecutive <code>int</code>-sized slots (typically 4 bytes each, so 16 bytes total) and fills them in order. If <code>arr[0]</code> happens to sit at address 1000, then:</p>
+    <table>
+      <thead><tr><th>Element</th><th>Address</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td><code>arr[0]</code></td><td>1000</td><td>10</td></tr>
+        <tr><td><code>arr[1]</code></td><td>1004</td><td>20</td></tr>
+        <tr><td><code>arr[2]</code></td><td>1008</td><td>30</td></tr>
+        <tr><td><code>arr[3]</code></td><td>1012</td><td>40</td></tr>
+      </tbody>
+    </table>
+    <p>A pointer to the first element holds the address 1000. This contiguous layout is what makes arithmetic possible and efficient — to reach the next element you just add the size of one element to the current address.</p>
+    <p>The array name itself decays to a pointer in most contexts:</p>
+<pre><code><span class="kw">int</span>* p = arr;   <span class="cm">// p holds the address of arr[0]</span>
+<span class="cm">// *p == 10</span></code></pre>
+  </section>
+
+  <section id="arithmetic-basics">
+    <h2>Arithmetic Basics</h2>
+    <p>C++ defines four arithmetic operations on pointers: increment (<code>++</code>), decrement (<code>--</code>), integer addition/subtraction (<code>p + n</code>, <code>p - n</code>), and pointer subtraction (<code>p - q</code>). Each one steps in units of <em>the type the pointer points to</em>, not in bytes.</p>
+
+    <h3 id="increment-decrement">Increment &amp; Decrement</h3>
+<pre><code><span class="kw">int</span> arr[<span class="nu">4</span>] = {<span class="nu">10</span>, <span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">40</span>};
+<span class="kw">int</span>* p = arr;   <span class="cm">// points to arr[0]</span>
+
+++p;            <span class="cm">// now points to arr[1]</span>
+++p;            <span class="cm">// now points to arr[2]</span>
+--p;            <span class="cm">// back to arr[1]</span>
+
+<span class="fn">std::cout</span> &lt;&lt; *p &lt;&lt; <span class="st">"\n"</span>;  <span class="cm">// prints 20</span></code></pre>
+    <p>The crucial point: <code>++p</code> does not add 1 to the raw address. It adds <code>sizeof(int)</code> — typically 4. The compiler multiplies your step by the element size automatically.</p>
+
+    <h3 id="subscript">Subscript Notation</h3>
+    <p>The familiar square-bracket subscript is <em>exactly</em> pointer arithmetic with a dereference:</p>
+<pre><code>arr[<span class="nu">2</span>]     <span class="cm">// is identical to…</span>
+*(arr + <span class="nu">2</span>) <span class="cm">// add 2 element-widths to arr, then dereference</span></code></pre>
+    <p>This also means subscripting works on any pointer, not just arrays:</p>
+<pre><code><span class="kw">int</span>* p = arr + <span class="nu">1</span>;  <span class="cm">// p points to arr[1]</span>
+p[<span class="nu">1</span>];              <span class="cm">// same as *(p + 1) == arr[2] == 30</span></code></pre>
+    <div class="callout">
+      <div class="callout-title">Note</div>
+      Because <code>a[i]</code> is just <code>*(a + i)</code>, and addition is commutative, <code>i[a]</code> is <em>also</em> valid C++. This is a curiosity rather than a technique — you'll never write it in real code, but it helps cement the arithmetic model.
+    </div>
+
+    <h3 id="difference">Pointer Difference</h3>
+    <p>Subtracting two pointers gives the number of elements between them, as a <code>std::ptrdiff_t</code> (a signed integer type):</p>
+<pre><code><span class="kw">int</span> arr[<span class="nu">4</span>] = {<span class="nu">10</span>, <span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">40</span>};
+<span class="kw">int</span>* first = arr;
+<span class="kw">int</span>* last  = arr + <span class="nu">4</span>;  <span class="cm">// one past the end</span>
+
+<span class="ty">std::ptrdiff_t</span> count = last - first;  <span class="cm">// 4</span></code></pre>
+    <div class="callout warn">
+      <div class="callout-title">Rule</div>
+      Subtracting two pointers is only defined if both point into the <em>same array</em> (or one past its end). Subtracting pointers into different arrays produces undefined behavior, even if the numeric addresses happen to make sense.
+    </div>
+
+    <h3 id="comparison">Pointer Comparison</h3>
+    <p>Pointers within the same array can be compared with <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>==</code>, and <code>!=</code>:</p>
+<pre><code><span class="kw">int</span>* p = arr + <span class="nu">1</span>;
+<span class="kw">int</span>* q = arr + <span class="nu">3</span>;
+
+p &lt; q;   <span class="cm">// true — p is earlier in the array</span>
+p == q;  <span class="cm">// false</span></code></pre>
+    <p>This is the basis of range-for loops, iterator-based algorithms, and any loop that terminates when a pointer reaches the end of a buffer.</p>
+  </section>
+
+  <section id="one-past-end">
+    <h2>The One-Past-The-End Rule</h2>
+    <p>Every array of <em>n</em> elements has a valid (but non-dereferenceable) address at position <em>n</em> — one slot beyond the last element. The standard explicitly permits a pointer to this address to exist and to be used in comparisons. It is never valid to <em>dereference</em> it.</p>
+<pre><code><span class="kw">int</span> arr[<span class="nu">4</span>] = {<span class="nu">10</span>, <span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">40</span>};
+
+<span class="kw">int</span>* begin = arr;       <span class="cm">// &amp;arr[0]</span>
+<span class="kw">int</span>* end   = arr + <span class="nu">4</span>;  <span class="cm">// one-past-the-end — valid to hold, not to dereference</span>
+
+<span class="kw">for</span> (<span class="kw">int</span>* p = begin; p != end; ++p) {
+    <span class="fn">std::cout</span> &lt;&lt; *p &lt;&lt; <span class="st">" "</span>;  <span class="cm">// 10 20 30 40</span>
+}
+<span class="cm">// *end is undefined behavior — never do this</span></code></pre>
+    <p>This pattern — <code>begin</code> pointing to the first element, <code>end</code> pointing one past the last — is the foundation of every range in the C++ standard library. <code>std::vector::begin()</code> and <code>std::vector::end()</code> follow exactly this convention.</p>
+    <div class="callout tip">
+      <div class="callout-title">Why one-past and not the last element?</div>
+      If <code>end</code> pointed to the last element, an empty range would have no valid representation — <code>begin</code> and <code>end</code> would be the same address, but that address would need to be dereferenceable. Using one-past-the-end lets an empty range be represented as <code>begin == end</code> without ambiguity.
+    </div>
+  </section>
+
+  <section id="ub">
+    <h2>Undefined Behavior</h2>
+    <p>Pointer arithmetic is one of the most fertile sources of undefined behavior (UB) in C++. The compiler is permitted to assume that UB never occurs — and will optimize accordingly, which can produce results that are subtly or catastrophically wrong.</p>
+
+    <h3>Out-of-bounds access</h3>
+<pre><code><span class="kw">int</span> arr[<span class="nu">4</span>] = {<span class="nu">10</span>, <span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">40</span>};
+
+<span class="kw">int</span>* p = arr + <span class="nu">4</span>;  <span class="cm">// OK — one-past-the-end</span>
+*p;                 <span class="cm">// UB — dereferencing one-past-the-end</span>
+
+<span class="kw">int</span>* q = arr + <span class="nu">5</span>;  <span class="cm">// UB — address beyond one-past-the-end</span>
+<span class="kw">int</span>* r = arr - <span class="nu">1</span>;  <span class="cm">// UB — address before the array</span></code></pre>
+
+    <h3>Null pointer dereference</h3>
+    <p>Arithmetic on a null pointer is undefined even if you never dereference the result:</p>
+<pre><code><span class="kw">int</span>* p = <span class="kw">nullptr</span>;
+p + <span class="nu">1</span>;    <span class="cm">// UB</span>
+++p;      <span class="cm">// UB</span></code></pre>
+
+    <h3>Cross-object arithmetic</h3>
+    <p>Arithmetic that crosses the boundary between two separate objects — even adjacent ones in memory — is undefined:</p>
+<pre><code><span class="kw">int</span> a = <span class="nu">1</span>;
+<span class="kw">int</span> b = <span class="nu">2</span>;
+<span class="kw">int</span>* p = &amp;a;
+++p;   <span class="cm">// UB — not part of any array</span></code></pre>
+
+    <div class="callout danger">
+      <div class="callout-title">UB is not a runtime error</div>
+      The compiler does not insert a bounds check. Your program will not reliably crash. It may silently produce wrong output, corrupt nearby variables, or work fine in debug mode and break in release mode. Tools like AddressSanitizer (<code>-fsanitize=address</code>) and Valgrind exist specifically to catch these at runtime during development.
+    </div>
+  </section>
+
+  <section id="iterators">
+    <h2>Iterators</h2>
+    <p>Pointer arithmetic is powerful but low-level. The STL wraps its conventions into a higher-level abstraction: the <strong>iterator</strong>.</p>
+
+    <h3 id="iter-intro">What Is an Iterator?</h3>
+    <p>An iterator is any type that supports a pointer-like interface:</p>
+    <ul>
+      <li><code>*it</code> — dereference to access the current element</li>
+      <li><code>++it</code> — advance to the next element</li>
+      <li><code>it != end</code> — test whether the range is exhausted</li>
+    </ul>
+    <p>For a plain array, a raw pointer <em>is</em> a valid iterator. For <code>std::vector</code>, the iterator is typically a thin wrapper around a pointer. For <code>std::list</code>, it's a class that follows a <code>next</code> pointer in a linked node. The interface is the same in all three cases.</p>
+<pre><code><span class="pp">#include &lt;vector&gt;</span>
+<span class="pp">#include &lt;iostream&gt;</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="ty">std::vector</span>&lt;<span class="kw">int</span>&gt; v = {<span class="nu">10</span>, <span class="nu">20</span>, <span class="nu">30</span>, <span class="nu">40</span>};
+
+    <span class="cm">// Iterator-based loop — the canonical form</span>
+    <span class="kw">for</span> (<span class="kw">auto</span> it = v.<span class="fn">begin</span>(); it != v.<span class="fn">end</span>(); ++it) {
+        <span class="fn">std::cout</span> &lt;&lt; *it &lt;&lt; <span class="st">" "</span>;
+    }
+    <span class="cm">// The range-for loop is syntactic sugar for exactly this</span>
+    <span class="kw">for</span> (<span class="kw">int</span> x : v) {
+        <span class="fn">std::cout</span> &lt;&lt; x &lt;&lt; <span class="st">" "</span>;
+    }
+}</code></pre>
+    <p>The insight is that the <em>algorithm</em> (loop over a range) is separated from the <em>data structure</em> (how the range is stored). This is why <code>std::sort</code> works on a <code>std::vector</code>, a plain array, and a <code>std::deque</code>, without knowing anything about any of them.</p>
+
+    <h3 id="iter-categories">Iterator Categories</h3>
+    <p>Not all iterators support the same operations. The standard defines five categories, ordered by capability:</p>
+    <table>
+      <thead><tr><th>Category</th><th>Supports</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Input</strong></td><td>Read once, forward only (<code>*it</code>, <code>++it</code>, <code>==</code>)</td><td><code>std::istream_iterator</code></td></tr>
+        <tr><td><strong>Output</strong></td><td>Write once, forward only (<code>*it = val</code>, <code>++it</code>)</td><td><code>std::back_insert_iterator</code></td></tr>
+        <tr><td><strong>Forward</strong></td><td>Read/write, multi-pass, forward only</td><td><code>std::forward_list</code> iterator</td></tr>
+        <tr><td><strong>Bidirectional</strong></td><td>Forward + <code>--it</code></td><td><code>std::list</code>, <code>std::set</code> iterator</td></tr>
+        <tr><td><strong>Random Access</strong></td><td>Bidirectional + <code>it + n</code>, <code>it[n]</code>, <code>&lt;</code>, <code>&gt;</code></td><td><code>std::vector</code> iterator, raw pointer</td></tr>
+      </tbody>
+    </table>
+    <p>A raw pointer is a random-access iterator. That's why you can use a pointer with every algorithm in the library — it satisfies the strongest category.</p>
+    <div class="callout">
+      <div class="callout-title">C++20 note</div>
+      C++20 replaces the five categories with a richer system based on <strong>concepts</strong> — named requirements checked at compile time. The <code>std::ranges</code> namespace uses these concepts to give better error messages and enable new composition patterns. The five traditional categories still exist and are still useful, but concepts are the direction the language is heading.
+    </div>
+
+    <h3 id="iter-algorithms">Iterators &amp; Algorithms</h3>
+    <p>Every standard algorithm takes iterators rather than containers. This uniformity is the payoff:</p>
+<pre><code><span class="pp">#include &lt;algorithm&gt;</span>
+<span class="pp">#include &lt;vector&gt;</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="ty">std::vector</span>&lt;<span class="kw">int</span>&gt; v = {<span class="nu">4</span>, <span class="nu">2</span>, <span class="nu">7</span>, <span class="nu">1</span>, <span class="nu">9</span>, <span class="nu">3</span>};
+
+    <span class="cm">// Sort the whole vector</span>
+    <span class="fn">std::sort</span>(v.<span class="fn">begin</span>(), v.<span class="fn">end</span>());
+
+    <span class="cm">// Sort only the middle four elements</span>
+    <span class="fn">std::sort</span>(v.<span class="fn">begin</span>() + <span class="nu">1</span>, v.<span class="fn">begin</span>() + <span class="nu">5</span>);
+
+    <span class="cm">// Sort a plain C-style array — works identically</span>
+    <span class="kw">int</span> arr[] = {<span class="nu">5</span>, <span class="nu">3</span>, <span class="nu">8</span>, <span class="nu">1</span>};
+    <span class="fn">std::sort</span>(arr, arr + <span class="nu">4</span>);  <span class="cm">// arr + 4 is the one-past-the-end pointer</span>
+}</code></pre>
+
+    <h3>Reverse Iterators</h3>
+    <p>Containers also provide <code>rbegin()</code> and <code>rend()</code>, which return reverse iterators. Incrementing a reverse iterator moves <em>backwards</em> through the range:</p>
+<pre><code><span class="ty">std::vector</span>&lt;<span class="kw">int</span>&gt; v = {<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>};
+
+<span class="kw">for</span> (<span class="kw">auto</span> it = v.<span class="fn">rbegin</span>(); it != v.<span class="fn">rend</span>(); ++it) {
+    <span class="fn">std::cout</span> &lt;&lt; *it &lt;&lt; <span class="st">" "</span>;  <span class="cm">// 4 3 2 1</span>
+}</code></pre>
+    <p>The trick is that <code>rbegin()</code> wraps <code>end()</code> and <code>rend()</code> wraps <code>begin()</code>, and the increment/decrement operators are flipped internally. The algorithm still does <code>++it</code> — it never knows it's going backwards.</p>
+  </section>
+
+  <section id="span">
+    <h2>std::span</h2>
+    <p>Introduced in C++20, <code>std::span</code> is the modern way to talk about "a contiguous sequence of elements" without owning them. Think of it as a (pointer, length) pair bundled into a safe, readable type.</p>
+<pre><code><span class="pp">#include &lt;span&gt;</span>
+<span class="pp">#include &lt;vector&gt;</span>
+<span class="pp">#include &lt;iostream&gt;</span>
+
+<span class="kw">void</span> <span class="fn">print_all</span>(<span class="ty">std::span</span>&lt;<span class="kw">const int</span>&gt; elements) {
+    <span class="kw">for</span> (<span class="kw">int</span> x : elements) {
+        <span class="fn">std::cout</span> &lt;&lt; x &lt;&lt; <span class="st">" "</span>;
+    }
+}
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="kw">int</span> arr[] = {<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>};
+    <span class="ty">std::vector</span>&lt;<span class="kw">int</span>&gt; v = {<span class="nu">4</span>, <span class="nu">5</span>, <span class="nu">6</span>};
+
+    <span class="fn">print_all</span>(arr);                        <span class="cm">// works</span>
+    <span class="fn">print_all</span>(v);                          <span class="cm">// works — span converts implicitly</span>
+    <span class="fn">print_all</span>({v.<span class="fn">data</span>() + <span class="nu">1</span>, <span class="nu">2</span>});        <span class="cm">// passes just v[1] and v[2]</span>
+}</code></pre>
+
+    <h3>Subspans</h3>
+    <p><code>std::span</code> has <code>first(n)</code>, <code>last(n)</code>, and <code>subspan(offset, count)</code> methods that return a view into part of the range — no copy, no allocation:</p>
+<pre><code><span class="ty">std::span</span>&lt;<span class="kw">int</span>&gt; s = arr;
+<span class="kw">auto</span> first_two = s.<span class="fn">first</span>(<span class="nu">2</span>);      <span class="cm">// {1, 2}</span>
+<span class="kw">auto</span> last_two  = s.<span class="fn">last</span>(<span class="nu">2</span>);       <span class="cm">// {2, 3}</span>
+<span class="kw">auto</span> middle    = s.<span class="fn">subspan</span>(<span class="nu">1</span>, <span class="nu">1</span>); <span class="cm">// {2}</span></code></pre>
+
+    <h3>Why span instead of pointer + length?</h3>
+    <table>
+      <thead><tr><th></th><th>Pointer + length</th><th>std::span</th></tr></thead>
+      <tbody>
+        <tr><td>Bounds information</td><td>Separate, easily lost</td><td>Built in</td></tr>
+        <tr><td>Range-for loop</td><td>Manual</td><td>Native support</td></tr>
+        <tr><td>Works with algorithms</td><td>Manual begin/end</td><td><code>.begin()</code>/<code>.end()</code></td></tr>
+        <tr><td>Ownership</td><td>Ambiguous</td><td>Clearly non-owning</td></tr>
+        <tr><td>Subranges</td><td>Manual pointer math</td><td><code>first()</code>, <code>subspan()</code></td></tr>
+      </tbody>
+    </table>
+    <div class="callout tip">
+      <div class="callout-title">The modern guideline</div>
+      When a function needs to read (or modify) a contiguous sequence without owning it, prefer <code>std::span&lt;const T&gt;</code> (read-only) or <code>std::span&lt;T&gt;</code> (read-write) over raw pointer + length parameters. It works with arrays, vectors, and any other contiguous range, and it carries its bounds with it.
+    </div>
+  </section>
+
+  <section id="multidim">
+    <h2>Multi-Dimensional Arrays</h2>
+    <p>A two-dimensional array in C++ is an array of arrays, laid out in memory in row-major order — all elements of the first row, then all elements of the second row, and so on:</p>
+<pre><code><span class="kw">int</span> grid[<span class="nu">3</span>][<span class="nu">4</span>];  <span class="cm">// 3 rows, 4 columns = 12 ints in a single block</span></code></pre>
+    <p>The name <code>grid</code> decays to a pointer to the first row — type <code>int (*)[4]</code>, not <code>int**</code>. This is a common source of confusion:</p>
+<pre><code><span class="kw">int</span> grid[<span class="nu">3</span>][<span class="nu">4</span>] = {{<span class="nu">1</span>,<span class="nu">2</span>,<span class="nu">3</span>,<span class="nu">4</span>}, {<span class="nu">5</span>,<span class="nu">6</span>,<span class="nu">7</span>,<span class="nu">8</span>}, {<span class="nu">9</span>,<span class="nu">10</span>,<span class="nu">11</span>,<span class="nu">12</span>}};
+
+<span class="kw">int</span> (*row)[<span class="nu">4</span>] = grid;  <span class="cm">// pointer to a row of 4 ints</span>
+++row;                  <span class="cm">// advances by 4 ints (one full row)</span>
+
+<span class="cm">// Access element [1][2] three ways:</span>
+grid[<span class="nu">1</span>][<span class="nu">2</span>];                        <span class="cm">// = 7</span>
+*(*(grid + <span class="nu">1</span>) + <span class="nu">2</span>);              <span class="cm">// = 7 (same thing, spelled out)</span>
+*(&amp;grid[<span class="nu">0</span>][<span class="nu">0</span>] + <span class="nu">1</span>*<span class="nu">4</span> + <span class="nu">2</span>);      <span class="cm">// = 7 (raw offset into the flat block)</span></code></pre>
+    <div class="callout warn">
+      <div class="callout-title">int** is not a 2D array</div>
+      <p><code>int**</code> is a pointer to a pointer. It does not lay memory out contiguously and cannot be used as a drop-in replacement for a 2D array.</p>
+      <p>For dynamic 2D data with clean semantics, prefer <code>std::vector&lt;std::vector&lt;int&gt;&gt;</code> or a single <code>std::vector&lt;int&gt;</code> with manual index arithmetic.</p>
+    </div>
+  </section>
+
+  <section id="when-to-use">
+    <h2>When to Use Which</h2>
+    <table>
+      <thead><tr><th>Situation</th><th>Reach for</th></tr></thead>
+      <tbody>
+        <tr><td>Function that reads/modifies a contiguous range without owning it</td><td><code>std::span&lt;T&gt;</code> or <code>std::span&lt;const T&gt;</code></td></tr>
+        <tr><td>Loop over a container</td><td>Range-for (<code>for (auto x : v)</code>) or iterator-based for</td></tr>
+        <tr><td>Applying an algorithm to a sequence</td><td><code>std::sort</code>, <code>std::find</code>, etc. via <code>.begin()</code>/<code>.end()</code></td></tr>
+        <tr><td>Applying an algorithm to a sub-range</td><td>Iterator arithmetic: <code>v.begin() + 2</code>, <code>v.end() - 1</code></td></tr>
+        <tr><td>Raw pointer traversal (legacy code, hot inner loop)</td><td>Raw pointer with explicit begin/end; use AddressSanitizer in CI</td></tr>
+        <tr><td>Interfacing with a C API that takes pointer + length</td><td><code>v.data()</code> + <code>v.size()</code>, or <code>std::span</code> if available</td></tr>
+        <tr><td>Index arithmetic on a 2D layout</td><td>Flat <code>std::vector</code> with manual row * width + col, or <code>std::mdspan</code> (C++23)</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <div class="callout-title">The general rule</div>
+      If you find yourself writing <code>ptr + n</code> directly in high-level code, consider whether a named abstraction (<code>std::span</code>, an iterator, a range) would make the intent clearer. Raw pointer arithmetic is not wrong, but its meaning must be inferred from context. Named abstractions make the meaning explicit.
+    </div>
+  </section>
+
+  <section id="appendix">
+    <h2>Appendix: What C++ Has That C# Doesn't</h2>
+    <p>This appendix is written for readers coming from C#. The previous tutorial in this series covered the general comparison; this one focuses specifically on the memory-navigation tools introduced here.</p>
+
+    <h3>Pointer arithmetic — no equivalent outside <code>unsafe</code></h3>
+    <p>C++ pointer arithmetic is a first-class, everyday feature. In C# it exists only inside <code>unsafe</code> blocks, which require a compiler flag, are blocked in most managed environments, and are considered an advanced escape hatch rather than normal code.</p>
+
+    <h3>The iterator model as a language-level contract</h3>
+    <p>C# has <code>IEnumerable&lt;T&gt;</code> and <code>IEnumerator&lt;T&gt;</code>. These are interfaces backed by virtual dispatch — calling <code>MoveNext()</code> involves a virtual call through a vtable, which has measurable overhead in tight loops. C++ iterators are templates: the type of the iterator is known at compile time, and all operations inline. The compiler sees through the iterator to the underlying pointer and can generate the same code as a hand-written pointer loop.</p>
+
+    <h3>Spans as a deliberate, opt-in tool</h3>
+    <p>C# 7.2 added <code>Span&lt;T&gt;</code> as a way to access contiguous memory without allocation. The C++ <code>std::span</code> is very similar — deliberately so, because the C# designers modeled it on C++. The difference is that <code>std::span</code> is a natural expression of an idiom that has existed in C++ since C++98; in C# it is an addition to work around managed-heap constraints.</p>
+
+    <h3>The philosophical difference</h3>
+    <p>C# treats memory as something the runtime manages on your behalf. The language exposes a managed view: objects, references, garbage collection. Raw memory access is opt-in and deliberately inconvenient.</p>
+    <p>C++ treats memory as something you navigate directly. Abstractions like iterators and <code>std::span</code> are built on top of raw pointer arithmetic — they don't replace it, they name it. Understanding the pointer arithmetic underneath makes the abstractions transparent rather than magical.</p>
+    <div class="callout">
+      <div class="callout-title">One-sentence summary</div>
+      C# gives you a safe window onto memory and lets you crack it open with <code>unsafe</code>. C++ starts with the crack open and lets you seal it with types.
+    </div>
+  </section>
+
+  <section id="summary">
+    <h2>Summary</h2>
+    <p>The ideas in this tutorial form a hierarchy, each layer built on the one below:</p>
+    <ol>
+      <li><strong>Raw pointer arithmetic</strong> — stepping through contiguous memory in units of element size. The one-past-the-end rule gives every range a canonical representation.</li>
+      <li><strong>Undefined behavior</strong> — what arithmetic is forbidden and why the compiler doesn't protect you. AddressSanitizer catches these at runtime during development.</li>
+      <li><strong>Iterators</strong> — a compile-time interface that abstracts pointer arithmetic over arbitrary containers. A raw pointer is a valid iterator; containers provide wrappers. The five categories describe how capable each iterator type is.</li>
+      <li><strong><code>std::span</code></strong> — a non-owning view over a contiguous range. The modern way to write functions that accept "any array or vector" without taking ownership.</li>
+    </ol>
+    <p>The next natural step in this series is <strong>Memory Management</strong> — allocators, placement new, and what <code>unique_ptr</code> is actually doing internally when you call <code>make_unique</code>.</p>
+  </section>
+
+</main>
+
+<script>
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('#sidebar a[href^="#"]');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`#sidebar a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
