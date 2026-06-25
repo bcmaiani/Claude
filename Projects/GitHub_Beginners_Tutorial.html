@@ -638,14 +638,25 @@
     your commits to GitHub so they're backed up and visible to teammates.
   </p>
 
-  <h3>7. Open a Pull Request</h3>
+  <h3>7. Merge Your Branch (or Open a Pull Request)</h3>
+  <p>
+    A <strong>Pull Request (PR)</strong> is a formal proposal to merge your feature branch
+    into <code>main</code>. On a team it gives colleagues a chance to review and discuss your
+    code before it lands. <strong>As a solo developer you can skip the PR entirely</strong>
+    and merge directly in your IDE:
+  </p>
   <ol>
-    <li>Go to your repo on github.com</li>
-    <li>GitHub shows a banner: <em>"[your-branch] had recent pushes"</em></li>
-    <li>Click <strong>Compare &amp; pull request</strong></li>
-    <li>Write a title and description, then click <strong>Create pull request</strong></li>
-    <li>Once reviewed and approved, click <strong>Merge pull request</strong></li>
+    <li>Switch back to <code>main</code> in the branch switcher (bottom status bar)</li>
+    <li>In Rider or CLion: open the <strong>Git</strong> tool window → right-click your
+        feature branch → <strong>Merge '[branch]' into 'main'</strong></li>
+    <li>Push to GitHub as normal (<strong>VCS → Push</strong>)</li>
   </ol>
+  <p>
+    <strong>If you do want a Pull Request</strong> — for example, once you start collaborating
+    — Rider and CLion have this built in. Open the <strong>Git</strong> tool window and look
+    for the <strong>Pull Requests</strong> tab. You can create, review, and merge PRs there
+    without leaving the IDE. In Xcode, you'll need to go to github.com for this step.
+  </p>
 
   <h3>8. Update your local main</h3>
   <p>
