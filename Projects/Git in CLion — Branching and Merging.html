@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git in CLion — Tutorial &amp; Notes</title>
+<style>
+  :root {
+    --bg:       #f9f9f8;
+    --surface:  #ffffff;
+    --border:   #e2e2de;
+    --border2:  #c8c8c2;
+    --text:     #1a1a18;
+    --muted:    #5a5a56;
+    --hint:     #8a8a84;
+    --blue-bg:  #e8f0fb;
+    --blue-txt: #1a4a8a;
+    --teal-bg:  #e2f4ee;
+    --teal-txt: #0d5e46;
+    --amber-bg: #fdf0d8;
+    --amber-txt:#7a4a08;
+    --red-bg:   #fbeae7;
+    --red-txt:  #8a2818;
+    --red-bdr:  #d4806e;
+    --note-bg:  #f0eeff;
+    --note-bdr: #9b8fe8;
+    --note-txt: #3a2f8a;
+    --code-bg:  #f2f2f0;
+    --kw:       #6b5fd4;
+    --fn:       #1a5faa;
+    --str:      #0d6644;
+    --num:      #9a3820;
+    --cm:       #8a8a84;
+    --radius:   8px;
+    --radius-lg:12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .layout { display: flex; max-width: 1180px; margin: 0 auto; }
+
+  /* ---- Sidebar ---- */
+  aside {
+    width: 250px; flex: 0 0 250px;
+    position: sticky; top: 0; align-self: flex-start;
+    height: 100vh; overflow-y: auto;
+    padding: 32px 20px; border-right: 1px solid var(--border);
+  }
+  aside .brand { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  aside .brand-sub { font-size: 12px; color: var(--hint); margin-bottom: 24px; }
+  aside nav a {
+    display: block; padding: 7px 12px; margin: 2px 0;
+    color: var(--muted); text-decoration: none; font-size: 14px;
+    border-radius: 6px; transition: background .15s, color .15s;
+  }
+  aside nav a:hover { background: var(--code-bg); color: var(--text); }
+  aside nav a .n { color: var(--hint); font-variant-numeric: tabular-nums; margin-right: 8px; font-size: 12px; }
+  aside .nav-group { font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--hint); margin: 22px 0 6px 12px; font-weight: 600; }
+
+  /* ---- Main ---- */
+  main { flex: 1 1 auto; min-width: 0; padding: 40px 48px 120px; }
+
+  header.page { margin-bottom: 40px; }
+  header.page h1 { font-size: 32px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 10px; }
+  header.page .lede { font-size: 17px; color: var(--muted); max-width: 60ch; }
+  header.page .stamp {
+    display: inline-block; margin-top: 16px; font-size: 12px; color: var(--hint);
+    background: var(--code-bg); padding: 4px 10px; border-radius: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  section { margin-bottom: 52px; scroll-margin-top: 24px; }
+  section > h2 {
+    font-size: 22px; font-weight: 700; letter-spacing: -.01em;
+    padding-bottom: 10px; border-bottom: 2px solid var(--border2); margin-bottom: 20px;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  section > h2 .n { font-size: 14px; color: var(--hint); font-weight: 600; }
+  h3 { font-size: 17px; font-weight: 600; margin: 28px 0 10px; }
+  p { margin-bottom: 14px; color: var(--text); }
+  p.muted { color: var(--muted); }
+
+  /* ---- inline tokens ---- */
+  .ui { font-weight: 600; color: var(--blue-txt); white-space: nowrap; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13.5px;
+    background: var(--code-bg); padding: 1px 6px; border-radius: 4px;
+  }
+  kbd {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-bottom-width: 2px; border-radius: 5px; padding: 1px 7px; white-space: nowrap;
+  }
+  pre.codeblk {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+    background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 18px; margin: 14px 0;
+    overflow-x: auto; line-height: 1.55; color: var(--text);
+  }
+  pre.codeblk .cm { color: var(--cm); }
+
+  /* ---- step list ---- */
+  ol.steps { list-style: none; counter-reset: s; margin: 16px 0; }
+  ol.steps > li {
+    counter-increment: s; position: relative; padding: 10px 0 10px 44px;
+    border-bottom: 1px solid var(--border);
+  }
+  ol.steps > li:last-child { border-bottom: none; }
+  ol.steps > li::before {
+    content: counter(s); position: absolute; left: 0; top: 9px;
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--blue-bg); color: var(--blue-txt); font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ---- annotation blocks (matching the C++ doc's colored notes) ---- */
+  .ann { border-radius: var(--radius); padding: 14px 18px; margin: 18px 0; font-size: 15px; }
+  .ann .tag { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; margin-bottom: 6px; }
+  .ann.why  { background: var(--note-bg); border-left: 3px solid var(--note-bdr); }
+  .ann.why .tag { color: var(--note-txt); }
+  .ann.win  { background: var(--teal-bg); border-left: 3px solid var(--teal-txt); }
+  .ann.win .tag { color: var(--teal-txt); }
+  .ann.warn { background: var(--amber-bg); border-left: 3px solid var(--amber-txt); }
+  .ann.warn .tag { color: var(--amber-txt); }
+  .ann.alarm{ background: var(--red-bg); border-left: 3px solid var(--red-bdr); }
+  .ann.alarm .tag { color: var(--red-txt); }
+
+  /* ---- model dl ---- */
+  dl.gloss dt { font-weight: 600; color: var(--blue-txt); margin-top: 14px; }
+  dl.gloss dd { color: var(--muted); margin-top: 2px; }
+
+  /* ---- model diagram ---- */
+  .model { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 22px; margin: 18px 0; }
+  .model svg { width: 100%; height: auto; display: block; }
+
+  /* ---- category cards (matching C++ doc cat-card) ---- */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 14px; margin: 18px 0; }
+  .card { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; }
+  .card .ch { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .card .ch .dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+  .card p { font-size: 13.5px; color: var(--muted); margin: 0; }
+
+  /* ---- trouble accordions ---- */
+  details.t { background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  details.t > summary { cursor: pointer; padding: 15px 18px; font-weight: 600; font-size: 16px;
+    list-style: none; display: flex; align-items: center; gap: 10px; }
+  details.t > summary::-webkit-details-marker { display: none; }
+  details.t > summary::before { content: "+"; font-family: ui-monospace, Menlo, monospace;
+    color: var(--blue-txt); font-weight: 700; width: 16px; }
+  details.t[open] > summary::before { content: "\2212"; }
+  details.t > summary .sym { margin-left: auto; font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px; font-weight: 400; color: var(--hint); }
+  .tb { padding: 4px 18px 18px; border-top: 1px solid var(--border); }
+  .tb .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--blue-txt); margin: 16px 0 3px; }
+  .tb p { font-size: 14.5px; margin-bottom: 8px; }
+
+  footer { margin-top: 64px; padding-top: 22px; border-top: 2px solid var(--border2);
+    font-size: 13px; color: var(--muted); }
+  footer .lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--hint); margin-bottom: 8px; }
+
+  /* mobile */
+  @media (max-width: 860px) {
+    aside { display: none; }
+    main { padding: 28px 22px 80px; }
+    header.page h1 { font-size: 26px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside>
+    <div class="brand">Git in CLion</div>
+    <div class="brand-sub">macOS · GUI only · living doc</div>
+    <nav>
+      <a href="#model"><span class="n">01</span>The model, fast</a>
+      <a href="#loop"><span class="n">02</span>The core loop</a>
+      <a href="#sync"><span class="n">03</span>Two-Mac sync</a>
+      <a href="#ignore"><span class="n">04</span>Ignoring IDE files</a>
+      <div class="nav-group">When it breaks</div>
+      <a href="#trouble"><span class="n">05</span>The four traps</a>
+      <a href="#rules"><span class="n">06</span>Five rules</a>
+      <a href="#gloss"><span class="n">07</span>Glossary</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="page">
+      <h1>Git in CLion, without the bafflement</h1>
+      <p class="lede">The branch → commit → merge → sync loop done entirely in CLion's GUI, plus a field guide to the four traps that turned one comment into a two-hour ordeal. Every trap here is one you actually hit — and none was a failure of yours.</p>
+      <span class="stamp">LIVING DOCUMENT · v2 · updated per session</span>
+    </header>
+
+    <!-- 01 MODEL -->
+    <section id="model">
+      <h2><span class="n">01</span> The model, fast</h2>
+      <p>Almost all the confusion comes from never being shown the one underlying picture. Git is three things:</p>
+
+      <div class="model">
+        <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Commits are dots on a line; a branch is a movable label pointing at a commit; HEAD is an arrow marking where you are.">
+          <line x1="80" y1="150" x2="640" y2="150" stroke="var(--border2)" stroke-width="2"/>
+          <circle cx="140" cy="150" r="11" fill="var(--fn)"/>
+          <circle cx="320" cy="150" r="11" fill="var(--fn)"/>
+          <circle cx="500" cy="150" r="11" fill="var(--fn)"/>
+          <text x="140" y="188" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="var(--muted)">commit</text>
+          <text x="320" y="188" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="var(--muted)">commit</text>
+          <text x="500" y="188" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="var(--muted)">commit</text>
+          <text x="360" y="216" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="var(--hint)">a saved snapshot of your files — permanent, never moves</text>
+          <rect x="450" y="92" width="100" height="30" rx="6" fill="var(--surface)" stroke="var(--fn)" stroke-width="1.5"/>
+          <text x="500" y="112" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="var(--fn)" font-weight="700">main</text>
+          <line x1="500" y1="122" x2="500" y2="139" stroke="var(--fn)" stroke-width="1.5"/>
+          <text x="612" y="104" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="var(--muted)">a label that</text>
+          <text x="612" y="118" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="var(--muted)">slides forward</text>
+          <text x="500" y="44" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="13" fill="var(--num)" font-weight="700">HEAD = you are here</text>
+          <path d="M500 50 L500 84" stroke="var(--num)" stroke-width="2" marker-end="url(#ar)"/>
+          <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--num)"/></marker></defs>
+        </svg>
+      </div>
+
+      <dl class="gloss">
+        <dt>A commit</dt><dd>A saved snapshot of your files with a message. Permanent. Each has an ugly ID like <code>cc10eae1</code>. Commits never move.</dd>
+        <dt>A branch</dt><dd>Just a <em>movable label</em> that points at a commit. <code>main</code> is a label. When you commit, the label slides forward. That's all a branch is.</dd>
+        <dt>HEAD</dt><dd>A pointer marking <em>where you are now</em>. Normally attached to a branch label (good). Pointing at a bare commit instead = <strong>detached HEAD</strong>, trap #1.</dd>
+      </dl>
+
+      <div class="ann why">
+        <span class="tag">Why this matters</span>
+        Every trap tonight is one question: <em>is HEAD attached to a branch label, or not?</em> The single tell is the widget in CLion's top header — a <strong>branch name</strong> (attached, fine) or an <strong>ID like <code>cc10eae1</code> with a yellow ⚠ triangle</strong> (detached, fix before continuing).
+      </div>
+    </section>
+
+    <!-- 02 LOOP -->
+    <section id="loop">
+      <h2><span class="n">02</span> The core loop: branch, commit, merge</h2>
+      <p>The branch widget lives in the <strong>top window header</strong> (main toolbar), not the bottom status bar — that's the modern CLion UI. Clicking it opens the <span class="ui">VCS widget</span> (Git Branches popup). Everything below happens there.</p>
+
+      <h3>A · Make a branch</h3>
+      <ol class="steps">
+        <li>Click the branch name (e.g. <span class="ui">main</span>) in the top header to open the VCS widget.</li>
+        <li>Under <span class="ui">Local</span>, click <span class="ui">main</span>, then <span class="ui">New Branch from 'main'</span>.</li>
+        <li>Name it descriptively, e.g. <code>add-feature-x</code>. Leave <span class="ui">Checkout branch</span> ticked. Click <span class="ui">Create</span>.</li>
+        <li>Confirm the header now shows your new branch name and <strong>no yellow triangle</strong>.</li>
+      </ol>
+
+      <h3>B · Make changes &amp; commit</h3>
+      <ol class="steps">
+        <li>Edit files normally. Changed files turn blue in the Project view.</li>
+        <li>Open the Commit tool window: <kbd>⌘0</kbd> (or <span class="ui">View ▸ Tool Windows ▸ Commit</span>).</li>
+        <li>Tick the files to include. <strong>Untick <code>workspace.xml</code> and <code>.idea/</code> files</strong> — IDE clutter, not your code (trap #4).</li>
+        <li>Type a message. Click <span class="ui">Commit</span> (not Commit and Push — keep steps separate while learning).</li>
+      </ol>
+
+      <h3>C · Merge the branch into main</h3>
+      <ol class="steps">
+        <li>Open the VCS widget. Under <span class="ui">Local</span>, click <span class="ui">main</span> → <span class="ui">Checkout</span>. <strong>Confirm the header reads <code>main</code>.</strong></li>
+        <li>Open the VCS widget again. Under <span class="ui">Local</span>, click your feature branch.</li>
+        <li>Choose <span class="ui">Merge '…' into 'main'</span>. The wording must say <em>into 'main'</em> — if it says <em>into</em> an ID, stop (detached — trap #1).</li>
+        <li>Done. Because <code>main</code> hadn't moved, this is instant and conflict-free.</li>
+      </ol>
+
+      <div class="ann win">
+        <span class="tag">What "done" looks like</span>
+        Header reads <code>main</code>, no triangle. The Git Log (<kbd>⌥9</kbd> ▸ Log) shows your feature commit now on the <code>main</code> line. Nothing pending.
+      </div>
+    </section>
+
+    <!-- 03 SYNC -->
+    <section id="sync">
+      <h2><span class="n">03</span> Syncing across your two Macs</h2>
+      <p>Your real goal: GitHub as the shared source of truth, both Macs interchangeable. One rhythm prevents the divergence trap:</p>
+
+      <h3>Start of every session</h3>
+      <ol class="steps">
+        <li><span class="ui">Git ▸ Pull</span> <kbd>⌘T</kbd> — pull <em>first</em>, before touching anything, so local matches GitHub.</li>
+        <li>Now branch, commit, merge as in §2.</li>
+      </ol>
+
+      <h3>End of every session</h3>
+      <ol class="steps">
+        <li>Make sure everything is committed (Commit window empty of your code files).</li>
+        <li><span class="ui">Git ▸ Push</span> <kbd>⇧⌘K</kbd> — send your work up to GitHub.</li>
+      </ol>
+
+      <div class="ann why">
+        <span class="tag">Why the order matters</span>
+        Divergence (trap #3) happens when both GitHub and local <code>main</code> have commits the other lacks. <strong>Pull-before-work, push-after-work</strong> means they never drift apart. Tonight's ordeal came from merging on one machine then pulling on the other without this rhythm — normal for a first attempt, and exactly what the rhythm prevents.
+      </div>
+
+      <div class="ann warn">
+        <span class="tag">One-time setting</span>
+        <span class="ui">CLion ▸ Settings</span> <kbd>⌘,</kbd> ▸ <span class="ui">Version Control ▸ Git</span> ▸ set <span class="ui">Update method</span> to <strong>Merge</strong>. The safe default; reduces how often the "divergent branches" prompt appears.
+      </div>
+    </section>
+
+    <!-- 04 IGNORE -->
+    <section id="ignore">
+      <h2><span class="n">04</span> Ignoring IDE files (kill trap #4 for good)</h2>
+      <p>Files like <code>workspace.xml</code> are CLion's own settings — window layout, open tabs, recent files — not your project's code. They change every time you use the IDE, which is why they keep blocking merges and, across your two Macs, generate endless phantom conflicts. The fix is to tell Git to stop tracking them via a file called <code>.gitignore</code>.</p>
+
+      <h3>What a <code>.gitignore</code> is</h3>
+      <p>A plain text file named exactly <code>.gitignore</code>, living in your project's top folder. Each line names a file or folder pattern Git should ignore entirely — never track, never commit, never complain about. JetBrains officially recommends ignoring the IDE files below.</p>
+
+      <h3>A · Create the file in CLion (GUI)</h3>
+      <ol class="steps">
+        <li>In the <span class="ui">Project</span> tool window (<kbd>⌘1</kbd>), right-click your project's <strong>top-level folder</strong>.</li>
+        <li>Choose <span class="ui">New ▸ File</span>.</li>
+        <li>Name it exactly <code>.gitignore</code> — with the leading dot, no extension. Press Enter.</li>
+        <li>If CLion asks whether to add it to Git, click <span class="ui">Add</span> (this file <em>should</em> be tracked — it's the one IDE-related file you keep).</li>
+      </ol>
+
+      <h3>B · Paste these lines in</h3>
+      <p>Open the new <code>.gitignore</code> and paste the following. The lines starting with <code>#</code> are comments (ignored by Git, just notes for you):</p>
+
+      <pre class="codeblk"><span class="cm"># ---- JetBrains IDE files (CLion, Rider, IntelliJ) ----</span>
+<span class="cm"># The whole .idea folder is per-machine settings, not code.</span>
+.idea/
+
+<span class="cm"># If you ever want to KEEP a couple of shared .idea files instead</span>
+<span class="cm"># of ignoring the whole folder, delete the line above and use these:</span>
+<span class="cm"># .idea/workspace.xml</span>
+<span class="cm"># .idea/tasks.xml</span>
+<span class="cm"># .idea/usage.statistics.xml</span>
+<span class="cm"># .idea/shelf/</span>
+
+<span class="cm"># ---- macOS junk ----</span>
+.DS_Store
+
+<span class="cm"># ---- Build output (CMake / CLion) ----</span>
+cmake-build-*/
+build/
+</pre>
+
+      <div class="ann warn">
+        <span class="tag">If the file was already committed</span>
+        Ignoring a file doesn't remove one Git is <em>already</em> tracking — like <code>workspace.xml</code> tonight. You also need to untrack it once: in the <span class="ui">Commit</span> tool window or Project view, right-click <code>workspace.xml</code> (or the <code>.idea</code> folder) → <span class="ui">Git ▸ Rollback / Unversion</span>, or use <span class="ui">Git ▸ Add to .gitignore</span> which CLion offers directly on a right-clicked file. After that, commit the change. From then on it's silent.
+      </div>
+
+      <h3>C · The shortcut CLion gives you</h3>
+      <p>You don't always have to write the file by hand. When an IDE file shows up in your changes, right-click it in the <span class="ui">Commit</span> window and look for <span class="ui">Git ▸ Add to .gitignore</span>. CLion appends the right line for you and creates the <code>.gitignore</code> if it doesn't exist. Either route gets you to the same place.</p>
+
+      <h3>D · Commit the <code>.gitignore</code></h3>
+      <ol class="steps">
+        <li>Open the Commit window (<kbd>⌘0</kbd>). You'll see <code>.gitignore</code> listed.</li>
+        <li>Tick it, write a message like <code>Add gitignore for IDE files</code>, and <span class="ui">Commit</span>.</li>
+        <li><span class="ui">Git ▸ Push</span> so the other Mac gets the same rules. Now both machines ignore the same clutter.</li>
+      </ol>
+
+      <div class="ann win">
+        <span class="tag">Result</span>
+        <code>workspace.xml</code> and friends stop appearing in every commit and stop blocking merges. Trap #4 is gone on both Macs — permanently.
+      </div>
+    </section>
+
+    <!-- 05 TROUBLE -->
+    <section id="trouble">
+      <h2><span class="n">05</span> Field guide to the four traps</h2>
+      <p class="muted">The exact four you hit, in the order they bit you. Click to expand.</p>
+
+      <details class="t" open>
+        <summary>Trap 1 · Detached HEAD <span class="sym">header shows cc10eae1 + ⚠</span></summary>
+        <div class="tb">
+          <p class="lbl">What you see</p>
+          <p>Top header shows an ID like <code>cc10eae1</code> instead of a branch name, with a yellow ⚠. Merge options read "into <code>cc10eae1</code>" not "into 'main'."</p>
+          <p class="lbl">What it actually means</p>
+          <p>HEAD points straight at a <em>commit</em> instead of a <em>branch label</em>. You're standing on a snapshot with no branch under your feet; commits made here aren't attached to a branch.</p>
+          <p class="lbl">How you got here</p>
+          <p>You checked out a <em>commit</em> rather than a <em>branch</em> — right-clicking a commit in the Log and choosing Checkout, selecting a commit-row instead of a branch name, or checking out an <code>origin/…</code> line directly.</p>
+          <p class="lbl">The fix (GUI)</p>
+          <p><strong>First: did you commit anything while detached?</strong> Open the Log (<kbd>⌥9</kbd>). If a commit sits at the top with <em>no</em> branch label, rescue it: VCS widget → <span class="ui">New Branch</span> → name it <code>rescue</code> → Checkout. Then reattach: VCS widget → <span class="ui">Local</span> → <span class="ui">main</span> → <span class="ui">Checkout</span>. Header returns to <code>main</code>, triangle gone. If nothing was committed while detached (your case tonight), checkout <code>main</code> directly — nothing lost.</p>
+        </div>
+      </details>
+
+      <details class="t">
+        <summary>Trap 2 · The branch that "vanished" <span class="sym">can't find my branch</span></summary>
+        <div class="tb">
+          <p class="lbl">What you see</p>
+          <p>Your branch isn't where you expect; the Local node doesn't list the name you're hunting.</p>
+          <p class="lbl">What it actually means</p>
+          <p>Almost always a <strong>name mismatch</strong>, not a deletion. Tonight you searched for <code>new_feature</code> (a placeholder name) while your branch was actually <code>Add-Branching-Comment</code>. It was in the list the whole time under its real name.</p>
+          <p class="lbl">The fix (GUI)</p>
+          <p>Open the Log (<kbd>⌥9</kbd> ▸ Log). Branch names show as colored tags next to commits — read the <em>actual</em> names. The <span class="ui">Local</span> node is the authoritative list; trust it over any half-remembered name.</p>
+          <p class="lbl">Prevention</p>
+          <p>Name branches deliberately and note the name for the session. A label only helps if you know what it says.</p>
+        </div>
+      </details>
+
+      <details class="t">
+        <summary>Trap 3 · Divergent branches <span class="sym">"specify how to reconcile"</span></summary>
+        <div class="tb">
+          <p class="lbl">What you see</p>
+          <p>A pull fails with <em>"You have divergent branches and need to specify how to reconcile them."</em></p>
+          <p class="lbl">What it actually means</p>
+          <p>Not an error — a question. Both local and GitHub copies have commits the other lacks, so Git refuses to guess and asks you to choose. Triggered by merging locally on one Mac, then pulling.</p>
+          <p class="lbl">The fix (GUI)</p>
+          <p>Set the default once: <span class="ui">Settings</span> <kbd>⌘,</kbd> ▸ <span class="ui">Version Control ▸ Git</span> ▸ <span class="ui">Update method</span> = <strong>Merge</strong>. If a pull still balks, split it: <span class="ui">Git ▸ Fetch</span>, then VCS widget → <span class="ui">Remote ▸ origin ▸ main</span> → <span class="ui">Merge 'origin/main' into 'main'</span>. Naming the merge yourself sidesteps the question.</p>
+          <p class="lbl">Prevention</p>
+          <p>The pull-first / push-last rhythm in §3.</p>
+        </div>
+      </details>
+
+      <details class="t">
+        <summary>Trap 4 · workspace.xml in the way <span class="sym">"unsaved changes to workspace.xml"</span></summary>
+        <div class="tb">
+          <p class="lbl">What you see</p>
+          <p>A merge or checkout stalls over uncommitted changes to <code>workspace.xml</code> — a file you never touched.</p>
+          <p class="lbl">What it actually means</p>
+          <p><code>workspace.xml</code> (inside <code>.idea/</code>) is a <strong>CLion settings file</strong> — window layout, open tabs, recent files. Not your code. It changes constantly from just using the IDE, so it keeps blocking operations.</p>
+          <p class="lbl">The fix right now (GUI)</p>
+          <p>When prompted, choose <span class="ui">Smart checkout</span> / <span class="ui">Shelve</span> / <span class="ui">Stash</span> — any sets it aside, runs your operation, restores it. Safe; only IDE layout moves, never code.</p>
+          <p class="lbl">The permanent fix</p>
+          <p>Stop tracking it: add <code>.idea/workspace.xml</code> to <code>.gitignore</code> (JetBrains recommends ignoring it, especially across two machines where it causes endless spurious conflicts). Save for a calm moment — see session notes.</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- 06 RULES -->
+    <section id="rules">
+      <h2><span class="n">06</span> Five rules that prevent all of it</h2>
+      <ol class="steps">
+        <li><strong>Read the header before every action.</strong> Branch name = safe. ID + ⚠ = detached; fix first.</li>
+        <li><strong>Switch branches only via the VCS widget's Local node</strong> → click the <em>name</em> → Checkout. Never checkout a commit from the Log unless you mean to.</li>
+        <li><strong>Pull first, push last,</strong> every session, on whichever Mac you're at.</li>
+        <li><strong>Never commit <code>workspace.xml</code> or <code>.idea/</code> files.</strong> Untick them; better, gitignore them.</li>
+        <li><strong>When confused, open the Log</strong> (<kbd>⌥9</kbd>). The commit graph is ground truth — where every label and HEAD really are, whatever a dialog claims.</li>
+      </ol>
+    </section>
+
+    <!-- 07 GLOSSARY -->
+    <section id="gloss">
+      <h2><span class="n">07</span> Plain-language glossary</h2>
+      <dl class="gloss">
+        <dt>Repository (repo)</dt><dd>The project folder Git tracks, plus its full history.</dd>
+        <dt>Commit</dt><dd>A permanent saved snapshot of your files, with a message and an ID.</dd>
+        <dt>Branch</dt><dd>A movable label pointing at a commit. <code>main</code> is the default.</dd>
+        <dt>HEAD</dt><dd>Pointer to where you are now. On a branch normally; "detached" if on a bare commit.</dd>
+        <dt>Checkout</dt><dd>Move HEAD somewhere — onto a branch (good) or onto a commit (detaches).</dd>
+        <dt>Origin</dt><dd>The nickname for your GitHub copy. <code>origin/main</code> = GitHub's version of <code>main</code>.</dd>
+        <dt>Fetch</dt><dd>Download GitHub's latest state without combining it. Always safe.</dd>
+        <dt>Pull</dt><dd>Fetch <em>and then</em> merge in one move. The merge half occasionally asks questions.</dd>
+        <dt>Push</dt><dd>Send your local commits up to GitHub.</dd>
+        <dt>Merge</dt><dd>Combine one branch's commits into another.</dd>
+        <dt>.gitignore</dt><dd>A text file listing files/folders Git should never track — used to exclude IDE clutter like <code>workspace.xml</code>.</dd>
+        <dt>Divergent</dt><dd>Two copies of a branch each have commits the other lacks; Git asks how to reconcile.</dd>
+      </dl>
+    </section>
+
+    <footer>
+      <div class="lbl">Session notes — append each time</div>
+      <p>v3 · 2026-06-25 · Added §04 on ignoring IDE files (<code>.gitignore</code>), which retires trap #4. White-only styling, consistent with the C++ tutorial. Open follow-ups: (a) confirm the §03 pull/push rhythm across both Macs; (b) verify the final merge of <code>Add-Branching-Comment</code> landed and was pushed.</p>
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>
