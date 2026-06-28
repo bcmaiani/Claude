@@ -345,6 +345,7 @@
     <li><a href="#rider-conflicts" class="sub-link">Merge Conflicts</a></li>
     <li><a href="#rider-undo"      class="sub-link">Undo &amp; Stash</a></li>
     <li><a href="#clion">JetBrains CLion</a></li>
+    <li><a href="#clion-branch-workflow" class="sub-link">Branch Workflow</a></li>
     <li><a href="#clion-gitignore"   class="sub-link">.gitignore</a></li>
     <li><a href="#clion-blame"       class="sub-link">Blame &amp; History</a></li>
     <li><a href="#clion-submodules"  class="sub-link">Submodules</a></li>
@@ -570,7 +571,7 @@
     create a branch for each feature or fix, do your work there, and merge it back when ready.
   </p>
   <p>
-    Your IDE shows the current branch name in the status bar at the bottom of the window.
+    Your IDE shows the current branch name in the toolbar at the top of the window.
     Click it at any time to create or switch branches.
   </p>
   <div class="note">
@@ -614,7 +615,7 @@
 
   <h3>3. Create a feature branch</h3>
   <p>
-    Click the branch name in the bottom status bar and choose <strong>New Branch</strong>.
+    Click the <strong>Git Branch</strong> button in the Git Branch button (top toolbar) (shows the current branch name) and choose <strong>New Branch</strong>.
     Give it a descriptive name like <code>add-login-screen</code>. Never work directly
     on <code>main</code>.
   </p>
@@ -646,7 +647,7 @@
     and merge directly in your IDE:
   </p>
   <ol>
-    <li>Switch back to <code>main</code> in the branch switcher (bottom status bar)</li>
+    <li>Switch back to <code>main</code> in the branch switcher (Git Branch button (top toolbar))</li>
     <li>In Rider or CLion: open the <strong>Git</strong> tool window → right-click your
         feature branch → <strong>Merge '[branch]' into 'main'</strong></li>
     <li>Push to GitHub as normal (<strong>VCS → Push</strong>)</li>
@@ -676,7 +677,7 @@
 
   <div class="section-intro">
     Rider is a cross-platform .NET and C# IDE. All Git operations are available through the
-    menus, the Git tool window, the bottom status bar, and the Commit panel. You rarely
+    menus, the Git tool window, the Git Branch button (top toolbar), and the Commit panel. You rarely
     need the terminal for anything.
   </div>
 
@@ -696,13 +697,13 @@
   <h3 id="rider-branch">Create and Switch Branches</h3>
   <p><strong>Create a new branch:</strong></p>
   <ol>
-    <li>Click the branch name in the <strong>bottom-right status bar</strong></li>
+    <li>Click the branch name in the <strong>Git Branch button (top toolbar)</strong></li>
     <li>Click <strong>New Branch</strong></li>
     <li>Type a name (e.g. <code>feature/login-screen</code>) and click <strong>Create Branch</strong></li>
   </ol>
   <p><strong>Switch to an existing branch:</strong></p>
   <ol>
-    <li>Click the branch name in the status bar</li>
+    <li>Click the <strong>Git Branch</strong> button in the Git Branch button (top toolbar) (shows the current branch name)</li>
     <li>Under <strong>Remote Branches</strong>, find the branch you want</li>
     <li>Click it → <strong>Checkout</strong></li>
   </ol>
@@ -785,6 +786,121 @@
     here too. This section covers CLion-specific details.
   </div>
 
+  <h3 id="clion-branch-workflow">Complete Branch Workflow</h3>
+  <p>
+    This is the full sequence from creating a branch to merging it back into main.
+    Follow these steps in order every time. The key rule: <strong>you must be on
+    <code>main</code> before you can merge into it.</strong>
+  </p>
+
+  <h4>1. Confirm you are on main</h4>
+  <p>
+    Look at the <strong>Git Branch</strong> button in the top toolbar. It shows the
+    name of the branch you are currently on. If it says <code>main</code>, continue.
+    If it shows another branch name, click it → find <strong>main</strong> in the list
+    → click the <strong>&gt;</strong> arrow → click <strong>Checkout</strong>.
+  </p>
+
+  <h4>2. Create a new branch</h4>
+  <ol>
+    <li>Click the <strong>Git Branch</strong> button in the top toolbar</li>
+    <li>Click <strong>New Branch…</strong></li>
+    <li>Type a descriptive name (e.g. <code>add-login-screen</code>) — no spaces, use hyphens</li>
+    <li>Click <strong>Create</strong></li>
+  </ol>
+  <p>
+    The Git Branch button now shows your new branch name, confirming you are on it.
+  </p>
+
+  <h4>3. Make your changes</h4>
+  <p>
+    Edit your files in the editor as normal. CLion highlights changed files in the
+    Project panel so you can see what's been modified.
+  </p>
+
+  <h4>4. Save your files</h4>
+  <p>
+    <strong>File → Save All</strong> (or <kbd>⌘S</kbd>). Always save before committing.
+  </p>
+
+  <h4>5. Commit your changes</h4>
+  <ol>
+    <li>Click the <strong>Git Branch</strong> button → <strong>Commit…</strong>
+        (or press <kbd>⌘K</kbd>)</li>
+    <li>The Commit dialog opens showing all changed files — make sure the ones you
+        want are checked</li>
+    <li>Type a short, clear commit message describing what you changed
+        (e.g. <code>Add login screen layout</code>)</li>
+    <li>Click <strong>Commit</strong></li>
+  </ol>
+  <p>
+    CLion confirms with a brief notification showing how many files were committed.
+  </p>
+
+  <h4>6. Push your branch to GitHub</h4>
+  <ol>
+    <li>Click the <strong>Git Branch</strong> button → <strong>Push…</strong>
+        (or press <kbd>⇧⌘K</kbd>)</li>
+    <li>A dialog shows your branch name with an arrow pointing to
+        <code>origin : your-branch-name</code> and the label <strong>New</strong>
+        — this is correct for a first push of a new branch</li>
+    <li>Click <strong>Push</strong></li>
+  </ol>
+  <p>
+    CLion confirms with "Pushed [branch-name] to new branch origin/[branch-name]".
+    Your branch and its commits are now on GitHub.
+  </p>
+
+  <div class="note">
+    You may see a <strong>Create pull request</strong> link in the confirmation.
+    As a solo developer you can ignore this — you will merge directly in the IDE
+    in the steps below.
+  </div>
+
+  <h4>7. Switch back to main</h4>
+  <ol>
+    <li>Click the <strong>Git Branch</strong> button</li>
+    <li>Find <strong>main</strong> in the list</li>
+    <li>Click the <strong>&gt;</strong> arrow to the right of main</li>
+    <li>Click <strong>Checkout</strong></li>
+  </ol>
+  <p>
+    The Git Branch button now shows <code>main</code>. CLion may briefly show a
+    message saying "Workspace associated with branch 'main' has been restored" —
+    this is normal, ignore it.
+  </p>
+
+  <h4>8. Merge your branch into main</h4>
+  <ol>
+    <li>Click the <strong>Git Branch</strong> button</li>
+    <li>Find your feature branch in the list</li>
+    <li>Click the <strong>&gt;</strong> arrow to the right of it</li>
+    <li>Click <strong>Merge '[your-branch]' into 'main'</strong></li>
+  </ol>
+  <p>
+    CLion confirms with "Merged [your-branch] to main" and offers a
+    <strong>Delete [your-branch]</strong> link. Click it — the branch has done
+    its job and can be removed.
+  </p>
+
+  <h4>9. Push main to GitHub</h4>
+  <ol>
+    <li>Click the <strong>Git Branch</strong> button → <strong>Push…</strong>
+        (or press <kbd>⇧⌘K</kbd>)</li>
+    <li>Click <strong>Push</strong></li>
+  </ol>
+  <p>
+    Your merged changes are now on GitHub. You are back on main, ready to start
+    the next branch whenever you need one.
+  </p>
+
+  <div class="tip">
+    Steps 5 and 6 (commit and push the branch) can be combined into a single click:
+    in the Commit dialog, use the dropdown arrow next to the Commit button and choose
+    <strong>Commit and Push</strong>. This saves one step when you know you're ready
+    to push immediately.
+  </div>
+
   <h3>Clone a C/C++ Repository</h3>
   <ol>
     <li><strong>File → New Project from Version Control…</strong></li>
@@ -815,6 +931,53 @@
   <p>
     Once saved, CLion's Commit panel will no longer show build artifacts as changed files.
     Stage and commit the <code>.gitignore</code> file itself so teammates get it too.
+  </p>
+
+  <h3>If .idea/ Was Already Committed</h3>
+  <p>
+    Adding <code>.idea/</code> to your <code>.gitignore</code> only prevents <em>future</em>
+    commits — it has no effect on files Git is already tracking. If CLion's Commit panel or
+    Git Log shows <code>.idea/</code> files in earlier commits, you need to explicitly tell
+    Git to stop watching them. Open CLion's built-in terminal
+    (<strong>View → Tool Windows → Terminal</strong>) and run these two commands:
+  </p>
+  <pre><code>git rm -r --cached .idea
+git commit -m "Stop tracking .idea folder"</code></pre>
+  <p>What each command does:</p>
+  <ul>
+    <li><code>git rm -r --cached .idea</code> — removes the entire <code>.idea/</code> folder
+        from Git's index (what Git is watching). The <code>-r</code> means recursive (the whole
+        folder), and <code>--cached</code> means "only remove it from Git's tracking — leave the
+        actual files on disk untouched." Your IDE settings are not deleted.</li>
+    <li><code>git commit -m "Stop tracking .idea folder"</code> — saves that removal as a
+        commit, so the untracking becomes part of the repo's history.</li>
+  </ul>
+  <p>
+    After this, push as normal. The <code>.gitignore</code> entry keeps <code>.idea/</code>
+    out of all future commits permanently — you will never need to run these commands again
+    for this repo.
+  </p>
+  <div class="warn">
+    This fix applies to the current repo on the machine where you run it. Each computer
+    manages its own Git index independently. If you have the same repo cloned on another
+    machine and <code>.idea/</code> was tracked there too, run the same two commands on
+    that machine.
+  </div>
+
+  <h3>Preventing This on Every Future Project (Global .gitignore)</h3>
+  <p>
+    Rather than adding <code>.idea/</code> to the <code>.gitignore</code> of every new project,
+    you can create a single global ignore file that Git applies to every repo on your machine
+    automatically. Open the Terminal and run:
+  </p>
+  <pre><code>echo ".idea/" >> ~/.gitignore_global
+git config --global core.excludesfile ~/.gitignore_global</code></pre>
+  <p>
+    The first line adds <code>.idea/</code> to a file in your home folder. The second tells
+    Git to use that file as a global ignore list for all repos. From this point forward, you
+    never need to think about <code>.idea/</code> again on this computer — it will never appear
+    as an untracked file in any project. Run the same two lines on your desktop Mac to get the
+    same behaviour there.
   </p>
 
   <h3 id="clion-blame">Viewing Blame and File History</h3>
@@ -1025,12 +1188,12 @@
       </tr>
       <tr>
         <td>Create a branch</td>
-        <td>Click branch name in status bar → New Branch</td>
+        <td>Click branch name in Git Branch button (top toolbar) → New Branch</td>
         <td>Source Control → New Branch…</td>
       </tr>
       <tr>
         <td>Switch branch</td>
-        <td>Click branch name in status bar → select branch → Checkout</td>
+        <td>Click branch name in Git Branch button (top toolbar) → select branch → Checkout</td>
         <td>Source Control Navigator → right-click branch → Switch to Branch</td>
       </tr>
       <tr>
@@ -1190,7 +1353,7 @@
     <li>Open the Git Log (<kbd>Cmd+9</kbd> / <kbd>Alt+9</kbd>)</li>
     <li>Right-click the commit on <code>main</code> → <strong>Undo Commit…</strong></li>
     <li>Your changes return to the Commit panel as staged changes</li>
-    <li>Click the branch name in the status bar → <strong>New Branch</strong> → name it and click Create</li>
+    <li>Click the <strong>Git Branch</strong> button in the Git Branch button (top toolbar) (shows the current branch name) → <strong>New Branch</strong> → name it and click Create</li>
     <li>Commit your changes on this new branch</li>
   </ol>
   <p><strong>In Xcode:</strong> open the built-in terminal (<strong>Source Control → Open in Terminal</strong>),
