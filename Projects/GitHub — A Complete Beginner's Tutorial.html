@@ -348,6 +348,7 @@
     <li><a href="#clion-branch-workflow" class="sub-link">Branch Workflow</a></li>
     <li><a href="#clion-gitignore"   class="sub-link">.gitignore</a></li>
     <li><a href="#clion-blame"       class="sub-link">Blame &amp; History</a></li>
+    <li><a href="#clion-revert"      class="sub-link">Viewing &amp; Reverting</a></li>
     <li><a href="#clion-submodules"  class="sub-link">Submodules</a></li>
     <li><a href="#xcode">Xcode</a></li>
     <li><a href="#xcode-connect"   class="sub-link">Connect to GitHub</a></li>
@@ -597,49 +598,77 @@
     are in the sections that follow.
   </p>
 
-  <h3>1. Create a new repo on GitHub</h3>
+  <h3>1. Create a repository and get it into your IDE</h3>
+  <p>There are two ways to start. Use whichever fits your situation:</p>
+
+  <h4>Option A — Start from within the IDE (recommended)</h4>
+  <p>
+    Create your project locally first, then publish it to GitHub without ever
+    visiting the website.
+  </p>
+  <p><strong>CLion / Rider:</strong></p>
   <ol>
-    <li>On <a href="https://github.com" target="_blank">github.com</a>, click the <strong>+</strong> icon → <strong>New repository</strong></li>
-    <li>Give it a name (e.g. <code>my-project</code>), set it Public or Private</li>
-    <li>Check <strong>Add a README file</strong></li>
-    <li>Optionally choose a <strong>.gitignore template</strong> for your language (e.g. C++, Swift)</li>
-    <li>Click <strong>Create repository</strong></li>
+    <li>Create your project normally: <strong>File → New Project</strong></li>
+    <li>When ready to put it on GitHub: <strong>Git → GitHub → Share Project on GitHub…</strong></li>
+    <li>Enter a name, choose Public or Private, and click <strong>Share</strong></li>
+    <li>CLion creates the repo on GitHub and pushes your project automatically</li>
+  </ol>
+  <p><strong>Xcode:</strong></p>
+  <ol>
+    <li>Create your project normally: <strong>File → New → Project…</strong></li>
+    <li>When ready to put it on GitHub: <strong>Source Control → Publish "[Project Name]" to GitHub…</strong></li>
+    <li>Enter a name, choose Public or Private, and click <strong>Publish</strong></li>
+    <li>Xcode creates the repo on GitHub and pushes your project automatically</li>
   </ol>
 
-  <h3>2. Clone the repo into your IDE</h3>
+  <h4>Option B — Start from the GitHub website</h4>
   <p>
-    Open your IDE and use its built-in clone dialog to download the repo to your computer.
-    See the IDE-specific sections below for exact steps. Your IDE connects to GitHub, lists
-    your repos, and handles the download automatically.
+    Use this when you want GitHub to generate the initial files for you (README,
+    .gitignore template, licence).
+  </p>
+  <ol>
+    <li>On <a href="https://github.com" target="_blank">github.com</a>, click <strong>+</strong> → <strong>New repository</strong></li>
+    <li>Give it a name, set it Public or Private</li>
+    <li>Optionally check <strong>Add a README file</strong> and choose a
+        <strong>.gitignore template</strong> for your language</li>
+    <li>Click <strong>Create repository</strong></li>
+    <li>In your IDE, use the built-in clone dialog to download it. See the
+        IDE-specific sections below for exact steps.</li>
+  </ol>
+  <div class="warn">
+    If you choose Option B and add a README or .gitignore on GitHub, do
+    <strong>not</strong> also try to push a fresh local project — the histories
+    will conflict. Either start with an empty repo and push from the IDE, or
+    clone the GitHub repo and add your files into the cloned folder.
+  </div>
+
+  <h3>2. Create a feature branch</h3>
+  <p>
+    Click the <strong>Git Branch</strong> button in the top toolbar and choose
+    <strong>New Branch</strong>. Give it a descriptive name like
+    <code>add-login-screen</code>. Never work directly on <code>main</code>.
   </p>
 
-  <h3>3. Create a feature branch</h3>
-  <p>
-    Click the <strong>Git Branch</strong> button in the Git Branch button (top toolbar) (shows the current branch name) and choose <strong>New Branch</strong>.
-    Give it a descriptive name like <code>add-login-screen</code>. Never work directly
-    on <code>main</code>.
-  </p>
-
-  <h3>4. Write your code</h3>
+  <h3>3. Write your code</h3>
   <p>
     Make your changes in the editor as normal. Your IDE continuously tracks which files
     have changed, showing them highlighted in the Project panel.
   </p>
 
-  <h3>5. Stage and commit</h3>
+  <h3>4. Stage and commit</h3>
   <p>
     Open the IDE's Commit panel, check the files you want to include, write a clear
     commit message, and click Commit. Repeat steps 4–5 as often as you like — small,
     focused commits are better than large ones.
   </p>
 
-  <h3>6. Push to GitHub</h3>
+  <h3>5. Push to GitHub</h3>
   <p>
     Use <strong>Git → Push</strong> in your IDE (or the keyboard shortcut). This uploads
     your commits to GitHub so they're backed up and visible to teammates.
   </p>
 
-  <h3>7. Merge Your Branch (or Open a Pull Request)</h3>
+  <h3>6. Merge Your Branch (or Open a Pull Request)</h3>
   <p>
     A <strong>Pull Request (PR)</strong> is a formal proposal to merge your feature branch
     into <code>main</code>. On a team it gives colleagues a chance to review and discuss your
@@ -659,11 +688,12 @@
     without leaving the IDE. In Xcode, you'll need to go to github.com for this step.
   </p>
 
-  <h3>8. Update your local main</h3>
+  <h3>7. Sync on other machines</h3>
   <p>
-    Switch back to <code>main</code> in your IDE's branch switcher, then use
-    <strong>Git → Pull</strong> to download the merged changes. You're now ready to
-    start the next feature branch.
+    On any other machine where you have this project cloned: click the
+    <strong>Git Branch</strong> button → <strong>Update Project…</strong> →
+    <strong>Merge incoming changes into the current branch</strong> → <strong>OK</strong>.
+    You're now ready to start the next feature branch.
   </p>
 
   <div class="tip">
@@ -788,117 +818,132 @@
 
   <h3 id="clion-branch-workflow">Complete Branch Workflow</h3>
   <p>
-    This is the full sequence from creating a branch to merging it back into main.
-    Follow these steps in order every time. The key rule: <strong>you must be on
-    <code>main</code> before you can merge into it.</strong>
+    This is the complete, verified sequence from creating a branch to syncing it
+    across machines. Follow every step in order — skipping or reordering steps
+    is the most common source of errors.
   </p>
+  <div class="warn">
+    The key rule: you must be on <code>main</code> before you can merge into it.
+    Always check the Git Branch button before starting.
+  </div>
 
-  <h4>1. Confirm you are on main</h4>
+  <h4>Step 1 — Confirm you are on main</h4>
   <p>
-    Look at the <strong>Git Branch</strong> button in the top toolbar. It shows the
-    name of the branch you are currently on. If it says <code>main</code>, continue.
-    If it shows another branch name, click it → find <strong>main</strong> in the list
-    → click the <strong>&gt;</strong> arrow → click <strong>Checkout</strong>.
+    Look at the <strong>Git Branch</strong> button in the top toolbar. It displays
+    the name of the branch you are currently on. It must say <code>main</code>
+    before you proceed. If it shows another branch name:
   </p>
-
-  <h4>2. Create a new branch</h4>
   <ol>
-    <li>Click the <strong>Git Branch</strong> button in the top toolbar</li>
+    <li>Click the <strong>Git Branch</strong> button</li>
+    <li>Find <strong>main</strong> under the Local section</li>
+    <li>Click the <strong>&gt;</strong> arrow to its right</li>
+    <li>Click <strong>Checkout</strong></li>
+  </ol>
+  <p>The Git Branch button now shows <code>main</code>. Continue.</p>
+
+  <h4>Step 2 — Create a new branch</h4>
+  <ol>
+    <li>Click the <strong>Git Branch</strong> button</li>
     <li>Click <strong>New Branch…</strong></li>
-    <li>Type a descriptive name (e.g. <code>add-login-screen</code>) — no spaces, use hyphens</li>
+    <li>Type a descriptive name with no spaces — use hyphens (e.g. <code>add-login-screen</code>)</li>
     <li>Click <strong>Create</strong></li>
   </ol>
   <p>
-    The Git Branch button now shows your new branch name, confirming you are on it.
+    The Git Branch button now shows your new branch name, confirming you have
+    switched to it automatically.
   </p>
 
-  <h4>3. Make your changes</h4>
+  <h4>Step 3 — Make your changes</h4>
   <p>
-    Edit your files in the editor as normal. CLion highlights changed files in the
-    Project panel so you can see what's been modified.
+    Edit your files in the editor as normal. CLion highlights modified files in
+    the Project panel.
   </p>
 
-  <h4>4. Save your files</h4>
+  <h4>Step 4 — Save</h4>
   <p>
-    <strong>File → Save All</strong> (or <kbd>⌘S</kbd>). Always save before committing.
+    <strong>File → Save All</strong>. Always save before committing — unsaved
+    changes will not appear in the Commit panel.
   </p>
 
-  <h4>5. Commit your changes</h4>
+  <h4>Step 5 — Commit</h4>
   <ol>
     <li>Click the <strong>Git Branch</strong> button → <strong>Commit…</strong>
         (or press <kbd>⌘K</kbd>)</li>
-    <li>The Commit dialog opens showing all changed files — make sure the ones you
-        want are checked</li>
-    <li>Type a short, clear commit message describing what you changed
-        (e.g. <code>Add login screen layout</code>)</li>
+    <li>The Commit panel opens — confirm your changed file appears in the list
+        and is checked</li>
+    <li>Type a short commit message (e.g. <code>Add login screen</code>)</li>
     <li>Click <strong>Commit</strong></li>
   </ol>
-  <p>
-    CLion confirms with a brief notification showing how many files were committed.
-  </p>
+  <p>CLion briefly confirms how many files were committed.</p>
 
-  <h4>6. Push your branch to GitHub</h4>
+  <h4>Step 6 — Push your branch to GitHub</h4>
   <ol>
     <li>Click the <strong>Git Branch</strong> button → <strong>Push…</strong>
         (or press <kbd>⇧⌘K</kbd>)</li>
-    <li>A dialog shows your branch name with an arrow pointing to
-        <code>origin : your-branch-name</code> and the label <strong>New</strong>
-        — this is correct for a first push of a new branch</li>
+    <li>The dialog shows your branch pushing to <code>origin : your-branch-name</code>
+        with the label <strong>New</strong> — this is correct</li>
     <li>Click <strong>Push</strong></li>
   </ol>
   <p>
-    CLion confirms with "Pushed [branch-name] to new branch origin/[branch-name]".
-    Your branch and its commits are now on GitHub.
+    CLion confirms "Pushed [branch] to new branch origin/[branch]". You may also
+    see a <strong>Create pull request</strong> link — ignore it if you are working
+    alone.
   </p>
 
-  <div class="note">
-    You may see a <strong>Create pull request</strong> link in the confirmation.
-    As a solo developer you can ignore this — you will merge directly in the IDE
-    in the steps below.
-  </div>
-
-  <h4>7. Switch back to main</h4>
+  <h4>Step 7 — Switch back to main</h4>
   <ol>
     <li>Click the <strong>Git Branch</strong> button</li>
-    <li>Find <strong>main</strong> in the list</li>
-    <li>Click the <strong>&gt;</strong> arrow to the right of main</li>
+    <li>Find <strong>main</strong> under the Local section</li>
+    <li>Click the <strong>&gt;</strong> arrow to its right</li>
     <li>Click <strong>Checkout</strong></li>
   </ol>
   <p>
-    The Git Branch button now shows <code>main</code>. CLion may briefly show a
-    message saying "Workspace associated with branch 'main' has been restored" —
-    this is normal, ignore it.
+    The Git Branch button now shows <code>main</code>. CLion may show
+    "Workspace associated with branch 'main' has been restored" — this is
+    normal, ignore it.
   </p>
 
-  <h4>8. Merge your branch into main</h4>
+  <h4>Step 8 — Merge your branch into main</h4>
   <ol>
     <li>Click the <strong>Git Branch</strong> button</li>
     <li>Find your feature branch in the list</li>
-    <li>Click the <strong>&gt;</strong> arrow to the right of it</li>
+    <li>Click the <strong>&gt;</strong> arrow to its right</li>
     <li>Click <strong>Merge '[your-branch]' into 'main'</strong></li>
   </ol>
   <p>
-    CLion confirms with "Merged [your-branch] to main" and offers a
-    <strong>Delete [your-branch]</strong> link. Click it — the branch has done
-    its job and can be removed.
+    CLion confirms "Merged [your-branch] to main". If a
+    <strong>Delete [your-branch]</strong> link appears, click it to keep
+    things tidy.
   </p>
 
-  <h4>9. Push main to GitHub</h4>
+  <h4>Step 9 — Push main to GitHub</h4>
   <ol>
-    <li>Click the <strong>Git Branch</strong> button → <strong>Push…</strong>
-        (or press <kbd>⇧⌘K</kbd>)</li>
+    <li>Click the <strong>Git Branch</strong> button → <strong>Push…</strong></li>
     <li>Click <strong>Push</strong></li>
   </ol>
   <p>
-    Your merged changes are now on GitHub. You are back on main, ready to start
-    the next branch whenever you need one.
+    Your changes are now on GitHub. The Git Branch button shows <code>main</code>
+    and you are ready to start the next branch.
   </p>
 
+  <h4>Step 10 — Sync on another machine</h4>
+  <ol>
+    <li>Click the <strong>Git Branch</strong> button → <strong>Update Project…</strong></li>
+    <li>Choose <strong>Merge incoming changes into the current branch</strong></li>
+    <li>Click <strong>OK</strong></li>
+  </ol>
+  <p>Your other machine now has all the latest changes from GitHub.</p>
+  <div class="warn">
+    Use <strong>Git Branch button → Update Project…</strong> to sync, not
+    <strong>Git menu → Pull…</strong>. The Git menu's Pull command behaves
+    differently and can leave your local copy out of sync even when it
+    reports success. Update Project is the reliable path.
+  </div>
+
   <div class="tip">
-    Steps 5 and 6 (commit and push the branch) can be combined into a single click:
-    in the Commit dialog, use the dropdown arrow next to the Commit button and choose
-    <strong>Commit and Push</strong>. This saves one step when you know you're ready
-    to push immediately.
+    Steps 5 and 6 can be combined: in the Commit panel, click the dropdown arrow
+    next to the Commit button and choose <strong>Commit and Push</strong>. Skip
+    step 6 if you do this.
   </div>
 
   <h3>Clone a C/C++ Repository</h3>
@@ -994,6 +1039,67 @@ git config --global core.excludesfile ~/.gitignore_global</code></pre>
     To see a file's full change history: right-click the file in the <strong>Project</strong>
     panel → <strong>Git → Show History</strong>.
     A timeline appears showing every commit that touched this file, with full diffs.
+  </p>
+
+  <h3 id="clion-revert">Viewing History and Reverting to a Previous State</h3>
+
+  <h4>Opening the Git Log</h4>
+  <p>
+    <strong>Git menu → Show Git Log</strong>. The Log panel shows every commit in
+    your project's history, with branches and tags visible on the left.
+  </p>
+
+  <h4>Viewing a file as it was at a specific commit</h4>
+  <ol>
+    <li>In the Git Log, click the commit you want to inspect — the right panel
+        shows all files that were part of that commit</li>
+    <li>Double-click a file in that list to open a side-by-side diff showing the
+        file's state at that commit vs. the current version</li>
+    <li>Close the diff tab when done — nothing in your project has changed</li>
+  </ol>
+
+  <h4>Reverting the entire project to a previous commit</h4>
+  <div class="warn">
+    This is a destructive operation. It rewrites your local history and requires
+    a force push to sync GitHub afterward. Only do this when you're certain you
+    want to discard everything after the target commit.
+  </div>
+  <ol>
+    <li>Open the Git Log (<strong>Git menu → Show Git Log</strong>)</li>
+    <li>Find the commit you want to go back to</li>
+    <li>Right-click it → <strong>Reset Current Branch to Here…</strong></li>
+    <li>Choose <strong>Hard</strong> — this reverts all files to the state at
+        that commit. Local changes will be lost.</li>
+    <li>Click <strong>Reset</strong></li>
+  </ol>
+  <p>
+    Your files are now at that commit's state. However, your local main is now
+    behind GitHub's version, so a normal push will be rejected. You need a
+    force push:
+  </p>
+  <p>
+    CLion's Force Push option in the Push dialog is greyed out by default. Use
+    the Terminal instead (<strong>View → Tool Windows → Terminal</strong>):
+  </p>
+  <pre><code>git push --force</code></pre>
+  <div class="note">
+    Force push is safe when working alone, but dangerous on shared repos — it
+    overwrites GitHub's history and will break any teammate who has pulled
+    since that commit.
+  </div>
+
+  <h4>If the revert goes wrong — recovering without the terminal</h4>
+  <p>
+    If a Hard Reset leaves your project in an inconsistent state and a pull
+    doesn't fix it, try this before anything else: <strong>quit CLion completely
+    and reopen it</strong>. CLion often restores its state cleanly from GitHub
+    on restart, bringing your files back without any manual intervention.
+  </p>
+  <p>
+    Alternatively, open the Git Log → expand <strong>Remote → origin</strong>
+    on the left → click <strong>main</strong> → right-click the top commit →
+    <strong>Reset Current Branch to Here… → Hard → Reset</strong>.
+    This resets your local main to match GitHub exactly.
   </p>
 
   <h3 id="clion-submodules">Managing Submodules</h3>
@@ -1361,14 +1467,36 @@ git config --global core.excludesfile ~/.gitignore_global</code></pre>
 
   <h3>My push was rejected</h3>
   <p>
-    This usually means someone else pushed to the same branch since you last pulled.
-    Use <strong>Git → Pull…</strong> first to bring in their changes, resolve any
-    conflicts using the IDE's merge editor, and then push again.
+    This usually means GitHub has commits your local copy doesn't have yet.
+    Use <strong>Git Branch button → Update Project… → Merge incoming changes
+    into the current branch</strong> to pull them in, then push again.
   </p>
   <div class="warn">
-    Never use "force push" on a shared branch like <code>main</code>. It rewrites
+    Do not use <strong>Git menu → Pull…</strong> to sync — it behaves differently
+    and can leave your local copy out of sync even when it appears to succeed.
+    Always use <strong>Git Branch button → Update Project…</strong>.
+  </div>
+  <div class="warn">
+    Never use force push on a shared branch like <code>main</code>. It rewrites
     history and can permanently erase teammates' work.
   </div>
+
+  <h3>workspace.xml keeps appearing in conflicts and error messages</h3>
+  <p>
+    This file is a CLion internal settings file that was tracked by Git in early
+    commits before <code>.idea/</code> was added to <code>.gitignore</code>. It
+    appears as a ghost conflict when pulling or applying patches. It is safe to
+    ignore every time — click <strong>OK</strong> or <strong>Cancel</strong>
+    (not Rollback) when it appears and continue normally. It does not affect
+    your code.
+  </p>
+
+  <h3>The Git menu has disappeared from the top menu bar</h3>
+  <p>
+    This is a known CLion glitch that can occur after certain Git operations such
+    as a Hard Reset. Quit CLion completely and reopen the project — the Git menu
+    returns on restart every time.
+  </p>
 
   <h3>I have changes but need to switch branches urgently</h3>
   <p>
