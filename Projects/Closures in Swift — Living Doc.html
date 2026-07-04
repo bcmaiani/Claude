@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Closures in Swift — Living Doc</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/swift.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a202c;
+    --text-muted: #718096;
+    --accent: #3182ce;
+    --accent-light: #ebf4ff;
+    --code-bg: #f7f9fc;
+    --nav-width: 250px;
+    --note-bg: #fffbeb;
+    --note-border: #f6ad55;
+    --tip-bg: #f0fff4;
+    --tip-border: #68d391;
+    --warn-bg: #fff5f5;
+    --warn-border: #fc8181;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── Layout ── */
+  #wrapper { display: flex; min-height: 100vh; }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--nav-width);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 24px 0;
+    z-index: 100;
+  }
+
+  nav .logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 20px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  nav ul { list-style: none; }
+  nav li { display: flex; flex-direction: column; }
+
+  nav a {
+    display: block;
+    padding: 6px 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    border-left: 3px solid transparent;
+    transition: all .15s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  nav .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #a0aec0;
+    padding: 16px 20px 4px;
+  }
+
+  nav .sub-link {
+    padding-left: 32px;
+    font-size: 13px;
+  }
+
+  main {
+    margin-left: var(--nav-width);
+    max-width: 860px;
+    padding: 48px 56px 80px;
+    width: 100%;
+  }
+
+  /* ── Typography ── */
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+  h2 {
+    font-size: 1.5rem; font-weight: 700;
+    margin: 56px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 28px 0 10px; }
+  h4 { font-size: .95rem; font-weight: 600; margin: 20px 0 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+
+  p { margin-bottom: 14px; }
+  ul, ol { margin: 10px 0 14px 24px; }
+  li { margin-bottom: 4px; }
+
+  strong { font-weight: 600; }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Code ── */
+  pre {
+    background: var(--code-bg) !important;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    margin: 14px 0 20px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  code:not(pre code) {
+    background: #edf2f7;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+
+  /* ── Code label ── */
+  .code-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 20px 0 6px;
+  }
+
+  .step-label {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 20px 0 6px;
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .step-label .step-text {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ── Callout boxes ── */
+  .note, .tip, .warn {
+    border-left: 4px solid;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 16px 0 20px;
+    font-size: 14px;
+  }
+  .note  { background: var(--note-bg); border-color: var(--note-border); }
+  .tip   { background: var(--tip-bg);  border-color: var(--tip-border);  }
+  .warn  { background: var(--warn-bg); border-color: var(--warn-border); }
+
+  .note::before  { content: "📝 Note: ";     font-weight: 600; }
+  .tip::before   { content: "💡 Tip: ";      font-weight: 600; }
+  .warn::before  { content: "⚠️ Watch out: "; font-weight: 600; }
+
+  /* ── Tables ── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px;
+    font-size: 13.5px;
+  }
+  .ref-table th {
+    background: #f7fafc;
+    text-align: left;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+  }
+  .ref-table td {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #f7fafc; }
+  .yes { color: #276749; font-weight: 600; }
+  .no  { color: #9b2c2c; font-weight: 600; }
+
+  /* ── Cover ── */
+  .cover {
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+    padding-bottom: 24px;
+  }
+  .cover .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-top: 6px;
+  }
+  .meta {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-ga   { background: #c6f6d5; color: #276749; }
+  .badge-beta { background: #fefcbf; color: #744210; }
+  .badge-soon { background: #fed7aa; color: #7b341e; }
+
+  /* ── Two-col comparison ── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 14px 0 20px;
+  }
+  .compare-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .compare-col h4 {
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+    margin-bottom: 8px;
+    margin-top: 0;
+  }
+  .compare-col ul {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── Section intro ── */
+  .section-intro {
+    background: var(--accent-light);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    border: 1px solid #bee3f8;
+  }
+
+  /* ── Anatomy diagram ── */
+  .anatomy {
+    background: #1a202c;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 22px 24px;
+    margin: 16px 0 24px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 14px;
+    overflow-x: auto;
+  }
+  .anatomy .tag {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #90cdf4;
+    margin-top: 14px;
+    margin-bottom: 2px;
+  }
+  .anatomy .tag:first-child { margin-top: 0; }
+
+  /* ── Footer ── */
+  .footer-note {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div id="wrapper">
+
+<!-- ─────────── SIDEBAR ─────────── -->
+<nav id="sidebar">
+  <div class="logo">Swift Closures</div>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+
+    <li><div class="section-label">Fundamentals</div></li>
+    <li><a href="#what-closures-can-do">What Closures Can Do</a></li>
+    <li><a href="#anatomy">Anatomy of a Closure</a></li>
+
+    <li><div class="section-label">The Syntax Spectrum</div></li>
+    <li><a href="#syntax-spectrum">Verbose → Simplest</a></li>
+    <li><a href="#trailing-closures">Trailing Closures</a></li>
+    <li><a href="#multiple-trailing">Multiple Trailing Closures</a></li>
+
+    <li><div class="section-label">Higher-Order Functions</div></li>
+    <li><a href="#map-example">map</a></li>
+    <li><a href="#filter-example">filter</a></li>
+    <li><a href="#reduce-example">reduce</a></li>
+
+    <li><div class="section-label">Capturing &amp; Memory</div></li>
+    <li><a href="#capturing-values">Capturing Values</a></li>
+    <li><a href="#capture-lists">Capture Lists</a></li>
+    <li><a href="#reference-semantics">Reference Semantics</a></li>
+
+    <li><div class="section-label">Advanced Attributes</div></li>
+    <li><a href="#escaping-closures">@escaping</a></li>
+    <li><a href="#autoclosures">@autoclosure</a></li>
+    <li><a href="#closures-as-types">Closures as Types</a></li>
+    <li><a href="#concurrency">Sendable &amp; sending</a></li>
+
+    <li><div class="section-label">Reference</div></li>
+    <li><a href="#pitfalls">Pitfalls</a></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+    <li><a href="#changelog">Changelog</a></li>
+  </ul>
+</nav>
+
+<!-- ─────────── MAIN ─────────── -->
+<main>
+
+  <div class="cover" id="overview">
+    <h1>Closures in Swift</h1>
+    <p class="subtitle">A detailed, example-driven tutorial — every closure shown from its most verbose form down to its simplest</p>
+  </div>
+  <p class="meta">Last updated: 2026-07-03</p>
+
+  <p>
+    A <strong>closure</strong> is a self-contained block of functionality that can be passed around
+    and used in your code, much like a function. Closures can capture and store references to any
+    constants and variables from the context in which they're defined — a behavior known as
+    <strong>closing over</strong> those values, which is where the name comes from.
+  </p>
+
+  <div class="tip">
+    Every code example below is shown at least twice: once written as verbosely as Swift allows,
+    and again collapsed down through each syntactic shortcut Swift offers, ending at the simplest
+    legal form. Try reading each ladder top to bottom — it doubles as a tour of Swift's type
+    inference and closure sugar.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="what-closures-can-do">What Closures Can Do That a Function Can't</h2>
+
+  <div class="section-intro">
+    Here's the honest version, because Swift's own documentation is upfront about it: a named
+    function you write with the <code>func</code> keyword is, technically, <em>also</em> a closure —
+    the Swift Programming Language guide calls global and nested functions "special cases of
+    closures." So the interesting question isn't "closures vs. functions" as two unrelated
+    things. It's: what can a <strong>closure expression</strong> (the anonymous <code>{ ... }</code>
+    literal form) do that a <code>func</code> declaration structurally cannot?
+  </div>
+
+  <p>Five capabilities are unique to closure expressions:</p>
+
+  <table class="ref-table">
+    <thead><tr><th>Capability</th><th>Closure expression</th><th>func declaration</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Write it anonymously, inline, at the call site</strong></td>
+        <td class="yes">Yes — no name, no separate declaration</td>
+        <td class="no">No — must be declared elsewhere, then referenced by name</td>
+      </tr>
+      <tr>
+        <td><strong>Collapse to near-zero syntax</strong> (inferred types, implicit return, <code>$0</code>, trailing closure)</td>
+        <td class="yes">Yes — a full ladder of shorthands</td>
+        <td class="no">No — a <code>func</code> always needs its keyword, name, and parameter list spelled out</td>
+      </tr>
+      <tr>
+        <td><strong>Be returned from a function and keep carrying its captured state</strong></td>
+        <td class="yes">Yes — the natural, idiomatic pattern (factories, counters)</td>
+        <td class="no">Only via an equivalent nested function, which is itself just an unnamed-at-the-call-site closure in disguise</td>
+      </tr>
+      <tr>
+        <td><strong>Defer evaluation of a plain expression automatically</strong> via <code>@autoclosure</code></td>
+        <td class="yes">Yes — caller writes a bare expression; Swift wraps it</td>
+        <td class="no">Not applicable — a function's arguments are always evaluated as ordinary expressions before the call</td>
+      </tr>
+      <tr>
+        <td><strong>Opt in/out of outliving the call</strong> via <code>@escaping</code> / <code>Sendable</code> / <code>sending</code></td>
+        <td class="yes">Yes — this vocabulary exists specifically for closures</td>
+        <td class="no">A named function reference passed as an argument is treated under these same closure rules, not separate ones</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    In short: closures aren't a fundamentally different <em>kind</em> of code from functions — they're
+    the same underlying feature (a callable value with a parameter list and a body) plus an entire
+    layer of syntax and semantics for writing that value <strong>anonymously, tersely, and with
+    explicit control over its lifetime</strong>. That's the gap this tutorial fills in, example by
+    example.
+  </p>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="anatomy">Anatomy of a Closure Expression</h2>
+
+  <p>The general form of a closure expression:</p>
+
+  <div class="anatomy">
+<span class="tag">General form</span>{ (parameters) -&gt; ReturnType in
+    statements
+}</div>
+
+  <p>
+    Compare that to a function declaration. A function is named up front with the
+    <code>func</code> keyword; a closure has no name and no <code>func</code> keyword — the
+    opening brace <em>is</em> the closure, and the <code>in</code> keyword is what separates the
+    parameter/return-type header from the body.
+  </p>
+
+  <div class="compare">
+    <div class="compare-col">
+      <h4>Function declaration</h4>
+<pre><code class="language-swift">func multiply(_ a: Int, _ b: Int) -> Int {
+    return a * b
+}</code></pre>
+    </div>
+    <div class="compare-col">
+      <h4>Equivalent closure expression</h4>
+<pre><code class="language-swift">let multiply = { (a: Int, b: Int) -> Int in
+    return a * b
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="note">
+    Both <code>multiply</code> values above have the exact same type: <code>(Int, Int) -> Int</code>.
+    Swift doesn't distinguish "function type" from "closure type" — a function reference and a
+    closure literal are interchangeable wherever that type is expected.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="syntax-spectrum">The Syntax Spectrum: Verbose → Simplest</h2>
+
+  <div class="section-intro">
+    Worked example: sorting an array of strings in descending order using
+    <code>Array.sorted(by:)</code>, whose signature is
+    <code>sorted(by areInIncreasingOrder: (Element, Element) -> Bool) -> [Element]</code>.
+    Every stage below is functionally identical.
+  </div>
+
+<pre><code class="language-swift">let names = ["Chris", "Alex", "Ewa", "Barry", "Daniella"]</code></pre>
+
+  <div class="step-label"><span class="step-num">0</span><span class="step-text">Baseline — a named function passed by reference</span></div>
+  <p>This isn't a closure at all — it's the function-only starting point everything below improves on.</p>
+<pre><code class="language-swift">func backward(_ s1: String, _ s2: String) -> Bool {
+    return s1 > s2
+}
+
+var reversedNames = names.sorted(by: backward)</code></pre>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Fully verbose closure expression</span></div>
+  <p>Explicit parameter types, explicit return type, explicit <code>return</code>, passed by argument label.</p>
+<pre><code class="language-swift">reversedNames = names.sorted(by: { (s1: String, s2: String) -> Bool in
+    return s1 > s2
+})</code></pre>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Types inferred from context</span></div>
+  <p>Swift already knows <code>sorted(by:)</code> needs <code>(String, String) -> Bool</code>, so the parameter and return types can be dropped.</p>
+<pre><code class="language-swift">reversedNames = names.sorted(by: { s1, s2 in return s1 > s2 })</code></pre>
+
+  <div class="step-label"><span class="step-num">3</span><span class="step-text">Implicit return</span></div>
+  <p>A single-expression closure body can omit the <code>return</code> keyword — the expression's value is returned automatically.</p>
+<pre><code class="language-swift">reversedNames = names.sorted(by: { s1, s2 in s1 > s2 })</code></pre>
+
+  <div class="step-label"><span class="step-num">4</span><span class="step-text">Shorthand argument names</span></div>
+  <p>Swift automatically provides <code>$0</code>, <code>$1</code>, … for inline closures, letting you drop the parameter list and the <code>in</code> keyword entirely.</p>
+<pre><code class="language-swift">reversedNames = names.sorted(by: { $0 > $1 })</code></pre>
+
+  <div class="step-label"><span class="step-num">5</span><span class="step-text">Trailing closure syntax</span></div>
+  <p>Since the closure is the function's only (and last) argument, it can be written outside the parentheses — and here the parentheses themselves can be dropped along with the argument label.</p>
+<pre><code class="language-swift">reversedNames = names.sorted { $0 > $1 }</code></pre>
+
+  <div class="step-label"><span class="step-num">6</span><span class="step-text">Operator method reference — the simplest legal form</span></div>
+  <p>
+    <code>&gt;</code> is itself a function of type <code>(String, String) -> Bool</code> (via
+    <code>Comparable</code>), so it can be passed directly. This isn't a closure literal anymore —
+    it's the same "function as first-class value" idea from the table above, arriving at the
+    simplest possible spelling.
+  </p>
+<pre><code class="language-swift">reversedNames = names.sorted(by: >)</code></pre>
+
+  <div class="tip">
+    There's no single "correct" stopping point on this ladder. Reach for whichever step is most
+    readable at the call site — <code>sorted { $0 > $1 }</code> is idiomatic Swift; a five-line
+    named function is better when the logic is genuinely complex or reused elsewhere.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="trailing-closures">Trailing Closure Syntax</h2>
+
+  <p>
+    If a closure expression is a function's final argument, you can write it after the closing
+    parenthesis of the call — or, if it's the <em>only</em> argument, drop the parentheses
+    altogether.
+  </p>
+
+  <div class="code-label">Setup</div>
+<pre><code class="language-swift">func performTask(_ name: String, onSuccess: () -> Void) {
+    print("Running \(name)")
+    onSuccess()
+}</code></pre>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Normal call syntax</span></div>
+<pre><code class="language-swift">performTask("upload", onSuccess: {
+    print("upload finished")
+})</code></pre>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Trailing closure syntax</span></div>
+  <p>The argument label <code>onSuccess:</code> is dropped when the closure moves outside the parentheses.</p>
+<pre><code class="language-swift">performTask("upload") {
+    print("upload finished")
+}</code></pre>
+
+  <div class="warn">
+    Trailing closure syntax only removes the <em>label</em> at the call site — the parameter still
+    has a name (<code>onSuccess</code>) inside the function body and in its declaration. Don't
+    confuse "no label at the call site" with "no name at all."
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="multiple-trailing">Multiple Trailing Closures <span class="badge badge-ga">Swift 5.3+</span></h2>
+
+  <p>When a function takes more than one closure argument, each additional trailing closure keeps its label.</p>
+
+  <div class="code-label">Setup</div>
+<pre><code class="language-swift">func performTask(
+    _ name: String,
+    onSuccess: () -> Void,
+    onFailure: (Error) -> Void
+) {
+    print("Running \(name)")
+    onSuccess()
+}</code></pre>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Normal call syntax — every argument labeled inside the parentheses</span></div>
+<pre><code class="language-swift">performTask("upload", onSuccess: {
+    print("done")
+}, onFailure: { error in
+    print("failed: \(error)")
+})</code></pre>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Multiple trailing closures — first closure's label still dropped, later ones keep theirs</span></div>
+<pre><code class="language-swift">performTask("upload") {
+    print("done")
+} onFailure: { error in
+    print("failed: \(error)")
+}</code></pre>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       HIGHER-ORDER FUNCTIONS
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="map-example">Worked Example: map</h2>
+
+<pre><code class="language-swift">let numbers = [1, 2, 3, 4, 5]</code></pre>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Fully verbose</span></div>
+<pre><code class="language-swift">let doubled = numbers.map({ (n: Int) -> Int in
+    return n * 2
+})</code></pre>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Types inferred + implicit return</span></div>
+<pre><code class="language-swift">let doubled2 = numbers.map({ n in n * 2 })</code></pre>
+
+  <div class="step-label"><span class="step-num">3</span><span class="step-text">Shorthand argument name</span></div>
+<pre><code class="language-swift">let doubled3 = numbers.map({ $0 * 2 })</code></pre>
+
+  <div class="step-label"><span class="step-num">4</span><span class="step-text">Trailing closure</span></div>
+<pre><code class="language-swift">let doubled4 = numbers.map { $0 * 2 }</code></pre>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="filter-example">Worked Example: filter</h2>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Fully verbose</span></div>
+<pre><code class="language-swift">let evens = numbers.filter({ (n: Int) -> Bool in
+    return n % 2 == 0
+})</code></pre>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Types inferred + implicit return</span></div>
+<pre><code class="language-swift">let evens2 = numbers.filter({ n in n % 2 == 0 })</code></pre>
+
+  <div class="step-label"><span class="step-num">3</span><span class="step-text">Shorthand argument name</span></div>
+<pre><code class="language-swift">let evens3 = numbers.filter({ $0 % 2 == 0 })</code></pre>
+
+  <div class="step-label"><span class="step-num">4</span><span class="step-text">Trailing closure</span></div>
+<pre><code class="language-swift">let evens4 = numbers.filter { $0 % 2 == 0 }</code></pre>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="reduce-example">Worked Example: reduce</h2>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Fully verbose</span></div>
+<pre><code class="language-swift">let sum = numbers.reduce(0, { (runningTotal: Int, n: Int) -> Int in
+    return runningTotal + n
+})</code></pre>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Types inferred + implicit return</span></div>
+<pre><code class="language-swift">let sum2 = numbers.reduce(0, { runningTotal, n in runningTotal + n })</code></pre>
+
+  <div class="step-label"><span class="step-num">3</span><span class="step-text">Shorthand argument names</span></div>
+<pre><code class="language-swift">let sum3 = numbers.reduce(0, { $0 + $1 })</code></pre>
+
+  <div class="step-label"><span class="step-num">4</span><span class="step-text">Trailing closure</span></div>
+<pre><code class="language-swift">let sum4 = numbers.reduce(0) { $0 + $1 }</code></pre>
+
+  <div class="step-label"><span class="step-num">5</span><span class="step-text">Operator reference — the simplest legal form</span></div>
+  <p><code>+</code> is itself a function of type <code>(Int, Int) -> Int</code>, so it can be passed directly, same trick as <code>sorted(by: >)</code> earlier.</p>
+<pre><code class="language-swift">let sum5 = numbers.reduce(0, +)</code></pre>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="capturing-values">Capturing Values</h2>
+
+  <div class="section-intro">
+    This is the capability table's second row made concrete: a closure can capture a variable from
+    its enclosing scope and carry a live, mutable reference to it — even after that enclosing
+    scope has finished executing.
+  </div>
+
+  <div class="code-label">Classic example — a stateful counter factory</div>
+<pre><code class="language-swift">func makeIncrementer(incrementAmount: Int) -> () -> Int {
+    var total = 0
+    let incrementer: () -> Int = {
+        total += incrementAmount   // captures and mutates `total` by reference
+        return total
+    }
+    return incrementer
+}
+
+let incrementByTwo = makeIncrementer(incrementAmount: 2)
+incrementByTwo()   // 2
+incrementByTwo()   // 4
+incrementByTwo()   // 6
+
+let incrementByTen = makeIncrementer(incrementAmount: 10)
+incrementByTen()   // 10 — an entirely separate captured `total`
+</code></pre>
+
+  <p>
+    <code>total</code> is a local variable inside <code>makeIncrementer</code>. Normally it would
+    be destroyed the moment the function returns. Because the closure captures a reference to it,
+    Swift keeps it alive for as long as the closure exists — one <code>total</code> per call to
+    <code>makeIncrementer</code>, each independent of the others.
+  </p>
+
+  <div class="note">
+    A nested <code>func</code> can do this too (<code>func incrementer() -> Int { total += incrementAmount; return total }</code>
+    would behave identically). That's the "special case of a closure" point from the overview:
+    the capturing behavior itself isn't closure-exclusive — what's exclusive is being able to write
+    <code>incrementer</code> as an anonymous, inline <code>{ }</code> literal instead of a separate,
+    named declaration.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="capture-lists">Capture Lists</h2>
+
+  <p>
+    By default, a closure captures variables <em>by reference</em> — it always sees the current
+    value. A <strong>capture list</strong> lets you override that, snapshotting a value type at the
+    moment the closure is created, or controlling reference-counting behavior for reference types.
+  </p>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Default capture — by reference (sees later mutations)</span></div>
+<pre><code class="language-swift">var x = 10
+let printXByReference = { print(x) }
+x = 20
+printXByReference()   // prints 20 — sees the mutation</code></pre>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Capture list — snapshot at creation time</span></div>
+<pre><code class="language-swift">var y = 10
+let printXSnapshot = { [y] in print(y) }
+y = 20
+printXSnapshot()   // prints 10 — captured the value at closure-creation time</code></pre>
+
+  <p>The same syntax controls reference types, most commonly to avoid retain cycles with <code>self</code>:</p>
+
+  <div class="code-label">Full spectrum of self-capture, most retain-prone to safest / most explicit</div>
+<pre><code class="language-swift">class NetworkManager {
+    var onComplete: (() -> Void)?
+
+    func fetch() {
+        // 1 — Strong capture (default): risks a reference cycle if `self`
+        //     also holds a strong reference back to this closure.
+        onComplete = {
+            self.updateUI()
+        }
+
+        // 2 — [weak self]: self becomes Optional inside the closure.
+        onComplete = { [weak self] in
+            self?.updateUI()
+        }
+
+        // 3 — [weak self] with an early-exit guard, when you need
+        //     several uses of self in the body.
+        onComplete = { [weak self] in
+            guard let self else { return }
+            self.updateUI()
+        }
+
+        // 4 — [unowned self]: no Optional unwrapping, but crashes
+        //     if self has been deallocated by the time this runs.
+        //     Only use when self is guaranteed to outlive the closure.
+        onComplete = { [unowned self] in
+            self.updateUI()
+        }
+    }
+
+    func updateUI() { /* ... */ }
+}</code></pre>
+
+  <div class="warn">
+    <code>[unowned self]</code> trades safety for slightly less ceremony. If there's any chance the
+    closure runs after <code>self</code> is deallocated, prefer <code>[weak self]</code> — a crash
+    from a dangling unowned reference is much harder to debug than an optional you forgot to unwrap.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="reference-semantics">Closures Are Reference Types</h2>
+
+  <p>
+    Assigning a closure to a new constant or variable doesn't copy its captured state — both names
+    point at the same underlying closure and share its captures.
+  </p>
+
+<pre><code class="language-swift">let incrementByTwo = makeIncrementer(incrementAmount: 2)
+incrementByTwo()   // 2
+
+let alsoIncrementByTwo = incrementByTwo   // reference copy, not a fresh counter
+alsoIncrementByTwo()   // 4 — shares state with incrementByTwo
+incrementByTwo()       // 6 — still the same shared `total`</code></pre>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="escaping-closures">@escaping Closures</h2>
+
+  <div class="section-intro">
+    A closure parameter is <strong>non-escaping</strong> by default — Swift assumes it will be
+    called and discarded before the function returns. Mark it <code>@escaping</code> when it needs
+    to outlive the call, e.g. because it's stored in a property or invoked later on another queue.
+  </div>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Non-escaping (default) — this will not compile if you try to store `completion`</span></div>
+<pre><code class="language-swift">class Downloader {
+    // ❌ Compile error: "escaping closure captures non-escaping parameter"
+    // var pending: [() -> Void] = []
+    // func download(completion: () -> Void) {
+    //     pending.append(completion)
+    // }
+}</code></pre>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Marked @escaping — now it's legal to store or call later</span></div>
+<pre><code class="language-swift">class Downloader {
+    var pending: [() -> Void] = []
+
+    func download(completion: @escaping () -> Void) {
+        pending.append(completion)   // outlives this call — needs @escaping
+    }
+
+    func runPending() {
+        pending.forEach { $0() }
+        pending.removeAll()
+    }
+}</code></pre>
+
+  <div class="step-label"><span class="step-num">3</span><span class="step-text">A more realistic signature, then simplified with a typealias</span></div>
+<pre><code class="language-swift">// Verbose inline closure type
+func fetch(completion: @escaping (Result<Data, Error>) -> Void) { /* ... */ }
+
+// With a typealias — the @escaping attribute still applies at the call site
+typealias FetchCompletion = (Result<Data, Error>) -> Void
+func fetch(completion: @escaping FetchCompletion) { /* ... */ }</code></pre>
+
+  <div class="note">
+    <code>@escaping</code> itself hasn't gotten any less necessary — any parameter a function
+    stores, returns, or hands to another asynchronous API still needs it. What changed in
+    Swift 5.3 (<a href="https://github.com/swiftlang/swift-evolution/blob/main/proposals/0269-implicit-self-explicit-capture.md" target="_blank">SE-0269</a>)
+    is narrower: inside an <code>@escaping</code> closure you no longer have to write <code>self.</code>
+    explicitly when <code>self</code> is a value type, or when you've already listed <code>self</code>
+    in the capture list — Swift can tell a reference cycle isn't possible in those two cases.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="autoclosures">@autoclosure</h2>
+
+  <div class="section-intro">
+    <code>@autoclosure</code> automatically wraps a plain expression argument in a closure, so the
+    call site can look like an ordinary function call with no braces at all — while the callee
+    still controls exactly when (or whether) that expression is evaluated.
+  </div>
+
+  <div class="code-label">Setup — a logging helper</div>
+<pre><code class="language-swift">func logIfTrue(_ predicate: () -> Bool) {
+    if predicate() {
+        print("Condition was true")
+    }
+}</code></pre>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Without @autoclosure — caller must write an explicit closure</span></div>
+<pre><code class="language-swift">logIfTrue({ 2 > 1 })
+logIfTrue { 2 > 1 }   // trailing closure syntax still applies</code></pre>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">With @autoclosure — caller writes a bare expression</span></div>
+<pre><code class="language-swift">func logIfTrue(_ predicate: @autoclosure () -> Bool) {
+    if predicate() {
+        print("Condition was true")
+    }
+}
+
+logIfTrue(2 > 1)   // no braces — reads like a plain function call</code></pre>
+
+  <div class="step-label"><span class="step-num">3</span><span class="step-text">Combined with @escaping, for deferred evaluation</span></div>
+<pre><code class="language-swift">func logLater(_ predicate: @autoclosure @escaping () -> Bool) {
+    DispatchQueue.main.async {
+        if predicate() { print("Condition was true, evaluated later") }
+    }
+}</code></pre>
+
+  <div class="tip">
+    This is exactly how <code>??</code> and <code>assert(_:_:)</code> work in the standard library:
+    the right-hand side (or the assertion message) is only evaluated if it's actually needed,
+    which matters when that expression is expensive or has side effects.
+  </div>
+
+  <div class="warn">
+    <code>@autoclosure</code> hides the fact that a closure is being created at every call site.
+    Apple's own guidance is to use it sparingly — it can make code that looks like a simple
+    expression secretly defer or repeat work, which is surprising to readers.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="closures-as-types">Closures as Types</h2>
+
+  <p>Closures have a real type — <code>(ParameterTypes) -> ReturnType</code> — and can be used anywhere a type is expected: as a property, a typealias, an array element, or a dictionary value.</p>
+
+  <div class="code-label">typealias for a closure type</div>
+<pre><code class="language-swift">typealias MathOperation = (Int, Int) -> Int
+
+let add: MathOperation = { $0 + $1 }
+let multiply: MathOperation = { $0 * $1 }</code></pre>
+
+  <div class="code-label">Stored in a dictionary and invoked dynamically</div>
+<pre><code class="language-swift">let operations: [String: MathOperation] = [
+    "+": add,
+    "*": multiply
+]
+
+operations["+"]?(3, 4)   // 7
+operations["*"]?(3, 4)   // 12</code></pre>
+
+  <div class="code-label">As a default parameter value</div>
+<pre><code class="language-swift">func combine(_ a: Int, _ b: Int, using operation: MathOperation = { $0 + $1 }) -> Int {
+    operation(a, b)
+}
+
+combine(2, 3)             // 5  — uses the default (+)
+combine(2, 3, using: multiply)   // 6</code></pre>
+
+  <div class="code-label">Optional closure property</div>
+<pre><code class="language-swift">class Button {
+    var onTap: (() -> Void)?
+}
+
+let button = Button()
+button.onTap = { print("Tapped!") }
+button.onTap?()   // safe to call even if nil</code></pre>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="concurrency">Sendable &amp; sending Closures <span class="badge badge-ga">Swift 6</span></h2>
+
+  <div class="section-intro">
+    Swift 6's strict concurrency checking adds a closure-specific vocabulary for controlling which
+    isolation domain (thread, actor, task) a closure and its captured values are allowed to cross
+    into.
+  </div>
+
+  <div class="code-label">@Sendable — closure and its captures must be safe to share across domains</div>
+<pre><code class="language-swift">func fetchData(completion: @escaping @Sendable (Data) -> Void) {
+    // `completion` may run on a different thread/actor than the caller
+}</code></pre>
+
+  <div class="code-label">sending — transfers exclusive ownership of a non-Sendable capture</div>
+<pre><code class="language-swift">func process(_ work: sending @escaping () -> Void) {
+    // the caller gives up its own references to whatever `work` captured
+}</code></pre>
+
+  <div class="note">
+    Unlike <code>@unchecked Sendable</code>, <code>sending</code> doesn't bypass the compiler's
+    data-race checks — it changes <em>which</em> checks apply, verifying that ownership of the
+    captured values transfers cleanly instead of requiring every capture to be <code>Sendable</code>.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="pitfalls">Common Pitfalls</h2>
+
+  <div class="warn">
+    <strong>Retain cycles.</strong> A class instance holding a closure property, whose closure
+    strongly captures <code>self</code>, creates a cycle — neither can be deallocated. Use
+    <code>[weak self]</code> or <code>[unowned self]</code> whenever a closure is stored (not just
+    called and discarded).
+  </div>
+
+  <div class="warn">
+    <strong>Confusing "trailing" with "unnamed."</strong> Trailing closure syntax only removes the
+    label at the call site. The parameter still has whatever internal name it was declared with —
+    autocomplete and documentation will still show it.
+  </div>
+
+  <div class="warn">
+    <strong>Value types vs. reference types in captures.</strong> Capturing a <code>struct</code> or
+    other value type by reference (the default, no capture list) still means the closure sees
+    later mutations to that variable, because the <em>variable itself</em> is captured, not a
+    snapshot of its value at that instant. Only an explicit capture list (<code>{ [x] in ... }</code>)
+    snapshots it.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="cheatsheet">Cheat Sheet</h2>
+
+  <table class="ref-table">
+    <thead><tr><th>Form</th><th>Example</th><th>When to reach for it</th></tr></thead>
+    <tbody>
+      <tr><td>Fully verbose</td><td><code>{ (a: Int, b: Int) -> Bool in return a &gt; b }</code></td><td>Never, really — but useful for understanding what's being inferred away</td></tr>
+      <tr><td>Inferred types</td><td><code>{ a, b in return a &gt; b }</code></td><td>Multi-statement bodies where descriptive parameter names help readability</td></tr>
+      <tr><td>Implicit return</td><td><code>{ a, b in a &gt; b }</code></td><td>Single-expression bodies</td></tr>
+      <tr><td>Shorthand args</td><td><code>{ $0 &gt; $1 }</code></td><td>Short, self-evident closures — the Swift default style</td></tr>
+      <tr><td>Trailing closure</td><td><code>names.sorted { $0 &gt; $1 }</code></td><td>Whenever the closure is the last (or only) argument</td></tr>
+      <tr><td>Multiple trailing</td><td><code>fn { } onFailure: { }</code></td><td>APIs with more than one closure parameter (Swift 5.3+)</td></tr>
+      <tr><td>Operator reference</td><td><code>names.sorted(by: &gt;)</code></td><td>When an existing function/operator already matches the required signature exactly</td></tr>
+    </tbody>
+  </table>
+
+  <table class="ref-table">
+    <thead><tr><th>Attribute</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>@escaping</code></td><td>Closure may be called after the function that received it has returned</td></tr>
+      <tr><td><code>@autoclosure</code></td><td>Wraps a plain expression argument in a zero-parameter closure automatically</td></tr>
+      <tr><td><code>@Sendable</code></td><td>Closure and its captures are safe to share across concurrency domains</td></tr>
+      <tr><td><code>sending</code></td><td>Transfers ownership of a non-Sendable capture into a new isolation domain</td></tr>
+      <tr><td><code>[weak self]</code> / <code>[unowned self]</code></td><td>Capture list controlling reference counting for <code>self</code> (or any reference type)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer-note">
+    Closures in Swift · Living Doc · Sources: <a href="https://docs.swift.org/swift-book/documentation/the-swift-programming-language/closures/" target="_blank">Swift.org — Closures</a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="changelog">Changelog</h2>
+
+  <table class="ref-table">
+    <thead><tr><th>Date</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>2026-07-03</td>
+        <td>Initial version — capability comparison, full verbose-to-simplest ladders for sorting, map/filter/reduce, trailing and multiple trailing closures, capture lists, escaping/autoclosure/Sendable attributes, pitfalls, and cheat sheet.</td>
+      </tr>
+    </tbody>
+  </table>
+
+</main>
+</div>
+
+<script>
+const links = document.querySelectorAll('nav a');
+const targets = Array.from(links)
+  .map(a => document.querySelector(a.getAttribute('href')))
+  .filter(Boolean);
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const link = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+    if (link) link.classList.toggle('active', entry.isIntersecting);
+  });
+}, { rootMargin: '-10% 0px -80% 0px' });
+
+targets.forEach(t => observer.observe(t));
+</script>
+</body>
+</html>
