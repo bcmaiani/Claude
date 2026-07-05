@@ -341,6 +341,7 @@
     <li><div class="section-label">The Syntax Spectrum</div></li>
     <li><a href="#syntax-spectrum">Verbose → Simplest</a></li>
     <li><a href="#trailing-closures">Trailing Closures</a></li>
+    <li><a href="#why-closures">Why Closures Exist</a></li>
     <li><a href="#multiple-trailing">Multiple Trailing Closures</a></li>
 
     <li><div class="section-label">Higher-Order Functions</div></li>
@@ -573,6 +574,166 @@ var reversedNames = names.sorted(by: backward)</code></pre>
     confuse "no label at the call site" with "no name at all."
   </div>
 
+  <div class="step-label"><span class="step-num">3</span><span class="step-text">When the closure is the only argument, the parentheses disappear too</span></div>
+  <p>
+    <code>performTask</code> above always needs parentheses for <code>"upload"</code> — that
+    argument never goes away. But if a function takes <em>nothing but</em> a closure, there's
+    nothing left to keep the parentheses around:
+  </p>
+<pre><code class="language-swift">func showAlert(action: () -> Void) {
+    action()
+}
+
+showAlert(action: { print("shown") })   // normal call syntax
+showAlert() { print("shown") }          // trailing closure, empty parens kept
+showAlert { print("shown") }            // trailing closure, parens dropped entirely</code></pre>
+  <p>
+    All three lines call <code>showAlert</code> identically. The last form is what the sentence
+    above this example was describing — it's only possible because there's no other argument
+    competing for space inside the parentheses.
+  </p>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="why-closures">Why Closures Exist: Control, Not Data</h2>
+
+  <div class="section-intro">
+    If you look at <code>onSuccess: () -> Void</code> and think "a block of code with no inputs and
+    no output — what is that even for?", that reaction is correct, not a gap in your understanding.
+    In a simple, one-shot, synchronous example it genuinely isn't doing anything for you. The
+    payoff only shows up once the function you're calling controls something you can't: <em>whether</em>,
+    <em>when</em>, or <em>how many times</em> your code runs.
+  </div>
+
+  <h3>The trivial case: no benefit at all</h3>
+  <p>
+    Take the <code>performTask</code> example from a few sections back. Calling it with a trailing
+    closure and just writing the same two lines yourself produce <strong>identical output</strong>:
+  </p>
+
+  <div class="compare">
+    <div class="compare-col">
+      <h4>With a closure parameter</h4>
+<pre><code class="language-swift">func performTask(_ name: String, onSuccess: () -> Void) {
+    print("Running \(name)")
+    onSuccess()
+}
+
+performTask("upload") {
+    print("upload finished")
+}
+// Running upload
+// upload finished</code></pre>
+    </div>
+    <div class="compare-col">
+      <h4>No closure at all</h4>
+<pre><code class="language-swift">print("Running upload")
+print("upload finished")
+
+// Running upload
+// upload finished</code></pre>
+    </div>
+  </div>
+
+  <p>
+    Same two lines print, in the same order, either way. Nothing about closures is required to get
+    this behavior — which means that example, by itself, can't show you why closures matter. It's
+    only useful for showing <em>syntax</em>. Two changes make the closure version stop being optional.
+  </p>
+
+  <h3>Case 1 — the function decides <em>how many times</em></h3>
+  <p>
+    Here, the caller hands over a piece of code and the function decides how often to run it.
+    There's no way to write "the same thing" by just placing code after the call — you'd need to
+    know the repeat count yourself and write a loop, which defeats the point of calling a shared
+    <code>retry</code> function at all.
+  </p>
+
+<pre><code class="language-swift">func retry(times: Int, _ operation: () -> Void) {
+    for _ in 1...times {
+        operation()
+    }
+}
+
+retry(times: 3) {
+    print("attempt")
+}
+// attempt
+// attempt
+// attempt</code></pre>
+
+  <p>
+    <code>retry</code> doesn't know or care what "attempt" means — printing, a network call,
+    anything. It only owns the looping decision. The closure is how you hand it code without also
+    handing it your loop.
+  </p>
+
+  <h3>Case 2 — the function decides <em>when</em></h3>
+  <p>
+    This is the case that shows up constantly in real apps: work that doesn't finish by the time
+    the function returns — a network call, a user tapping a button, anything that has to wait for
+    something outside your program's own code. To keep this focused on closures rather than on any
+    particular concurrency API, here's a minimal stand-in: a function that <em>saves</em> your
+    closure instead of running it, and a separate function that runs it whenever it's eventually
+    called.
+  </p>
+
+<pre><code class="language-swift">class TaskRunner {
+    private var pending: (() -> Void)?
+
+    func performTaskLater(_ name: String, onSuccess: @escaping () -> Void) {
+        print("Scheduled \(name)")
+        pending = onSuccess   // stored, not called — runs later, if at all
+    }
+
+    func finishPendingTask() {
+        pending?()   // *now* your closure actually runs
+        pending = nil
+    }
+}
+
+let runner = TaskRunner()
+
+runner.performTaskLater("upload") {
+    print("upload finished")
+}
+print("This runs immediately — performTaskLater already returned")
+
+// ... arbitrarily later, e.g. once a real network response arrives ...
+runner.finishPendingTask()
+
+// Scheduled upload
+// This runs immediately — performTaskLater already returned
+// upload finished</code></pre>
+
+  <p>
+    <code>performTaskLater</code> returns immediately after printing <code>"Scheduled upload"</code>
+    — it does not run your closure. Your <code>{ print("upload finished") }</code> sits inside
+    <code>pending</code>, doing nothing, until something else entirely — a later, separate call to
+    <code>finishPendingTask()</code> — decides to trigger it. There's no way to reproduce that by
+    just writing code after the call; the code you wrote genuinely doesn't run until
+    <code>TaskRunner</code> chooses to run it.
+  </p>
+
+  <p>
+    Notice the parameter also needed <code>@escaping</code>: <code>onSuccess: () -> Void</code>
+    would be an error here. By default Swift assumes a closure argument is used and discarded
+    before its function returns; the moment you store it somewhere (like the <code>pending</code>
+    property above) so it can run <em>after</em> the function has already returned, you have to
+    mark it <code>@escaping</code> to tell Swift — and anyone reading the signature — that this
+    closure's lifetime isn't tied to the function call at all. (There's a full section on
+    <code>@escaping</code> later in this doc.)
+  </p>
+
+  <div class="tip">
+    That's the whole idea in one sentence: <strong>a closure parameter lets the function you're
+    calling — not you — decide if, when, and how many times your code runs.</strong> No parameters
+    or return value are needed for that to be useful, because the thing being communicated isn't
+    data, it's a moment in time. Every <code>() -> Void</code> closure you'll see in real Swift code —
+    button actions, animation completions, network callbacks — is this same shape, just wired up to
+    a "when" that's more interesting than a two-second timer.
+  </div>
+
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
   <h2 id="multiple-trailing">Multiple Trailing Closures <span class="badge badge-ga">Swift 5.3+</span></h2>
@@ -797,30 +958,65 @@ incrementByTwo()       // 6 — still the same shared `total`</code></pre>
     A closure parameter is <strong>non-escaping</strong> by default — Swift assumes it will be
     called and discarded before the function returns. Mark it <code>@escaping</code> when it needs
     to outlive the call, e.g. because it's stored in a property or invoked later on another queue.
+    This is the same <code>TaskRunner</code> example from the "Why Closures Exist" section — here
+    it is again, laid out as a direct non-escaping-vs-escaping comparison.
   </div>
 
-  <div class="step-label"><span class="step-num">1</span><span class="step-text">Non-escaping (default) — this will not compile if you try to store `completion`</span></div>
-<pre><code class="language-swift">class Downloader {
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Non-escaping (default) — this will not compile if you try to store `onSuccess`</span></div>
+<pre><code class="language-swift">class TaskRunner {
     // ❌ Compile error: "escaping closure captures non-escaping parameter"
-    // var pending: [() -> Void] = []
-    // func download(completion: () -> Void) {
-    //     pending.append(completion)
+    // private var pending: (() -> Void)?
+    // func performTaskLater(_ name: String, onSuccess: () -> Void) {
+    //     pending = onSuccess
     // }
 }</code></pre>
 
-  <div class="step-label"><span class="step-num">2</span><span class="step-text">Marked @escaping — now it's legal to store or call later</span></div>
-<pre><code class="language-swift">class Downloader {
-    var pending: [() -> Void] = []
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Marked @escaping — now it's legal to store and call later</span></div>
+<pre><code class="language-swift">class TaskRunner {
+    private var pending: (() -> Void)?
 
-    func download(completion: @escaping () -> Void) {
-        pending.append(completion)   // outlives this call — needs @escaping
+    func performTaskLater(_ name: String, onSuccess: @escaping () -> Void) {
+        print("Scheduled \(name)")
+        pending = onSuccess   // stored, not called — runs later, if at all
     }
 
-    func runPending() {
-        pending.forEach { $0() }
-        pending.removeAll()
+    func finishPendingTask() {
+        pending?()   // *now* your closure actually runs
+        pending = nil
     }
-}</code></pre>
+}
+
+let runner = TaskRunner()
+
+runner.performTaskLater("upload") {
+    print("upload finished")
+}
+print("This runs immediately — performTaskLater already returned")
+
+// ... arbitrarily later, e.g. once a real network response arrives ...
+runner.finishPendingTask()
+
+// Scheduled upload
+// This runs immediately — performTaskLater already returned
+// upload finished</code></pre>
+
+  <p>
+    <code>performTaskLater</code> returns immediately after printing <code>"Scheduled upload"</code>
+    — it does not run your closure. Your <code>{ print("upload finished") }</code> sits inside
+    <code>pending</code>, doing nothing, until something else entirely — a later, separate call to
+    <code>finishPendingTask()</code> — decides to trigger it. There's no way to reproduce that by
+    just writing code after the call; the code you wrote genuinely doesn't run until
+    <code>TaskRunner</code> chooses to run it.
+  </p>
+
+  <p>
+    That's exactly why the parameter needs <code>@escaping</code>: <code>onSuccess: () -> Void</code>
+    would be an error here. By default Swift assumes a closure argument is used and discarded
+    before its function returns; the moment you store it somewhere (like the <code>pending</code>
+    property above) so it can run <em>after</em> the function has already returned, you have to
+    mark it <code>@escaping</code> to tell Swift — and anyone reading the signature — that this
+    closure's lifetime isn't tied to the function call at all.
+  </p>
 
   <div class="step-label"><span class="step-num">3</span><span class="step-text">A more realistic signature, then simplified with a typealias</span></div>
 <pre><code class="language-swift">// Verbose inline closure type
