@@ -725,6 +725,147 @@ runner.finishPendingTask()
     <code>@escaping</code> later in this doc.)
   </p>
 
+  <h3>Line-by-line walkthrough of the <code>TaskRunner</code> example</h3>
+  <p>
+    The whole example above, broken down one line at a time — useful if any single piece of syntax
+    (the optional closure property, <code>@escaping</code>, optional chaining on a call, trailing
+    closure syntax) needs to be isolated from the rest.
+  </p>
+
+  <div class="step-label"><span class="step-num">1</span><span class="step-text">Optional closure property</span></div>
+<pre><code class="language-swift">private var pending: (() -> Void)?</code></pre>
+  <p>
+    A private, mutable property that can either hold a closure of type <code>() -> Void</code>, or
+    be <code>nil</code>. <code>private</code> restricts read/write access to code inside
+    <code>TaskRunner</code>; <code>var</code> makes it reassignable over time; the trailing
+    <code>?</code> makes the property itself optional — it may hold a closure, or hold nothing.
+  </p>
+
+  <div class="step-label"><span class="step-num">2</span><span class="step-text">Method signature, with @escaping</span></div>
+<pre><code class="language-swift">func performTaskLater(_ name: String, onSuccess: @escaping () -> Void) {</code></pre>
+  <p>
+    Declares a method taking an unlabeled <code>String</code> (<code>name</code> — the underscore
+    drops the argument label at the call site) and a labeled, escaping closure (<code>onSuccess</code>)
+    of type <code>() -> Void</code>. <code>@escaping</code> means this method is allowed to store
+    <code>onSuccess</code> and call it after the method itself has already returned.
+  </p>
+
+  <div class="step-label"><span class="step-num">3</span><span class="step-text">Log statement</span></div>
+<pre><code class="language-swift">print("Scheduled \(name)")</code></pre>
+  <p>
+    Prints a message using string interpolation — <code>\(name)</code> evaluates the parameter and
+    inserts its value into the string. Nothing closure-related happens on this line; it just confirms
+    the method was called, before anything gets stored.
+  </p>
+
+  <div class="step-label"><span class="step-num">4</span><span class="step-text">Storing the closure without calling it</span></div>
+<pre><code class="language-swift">pending = onSuccess   // stored, not called — runs later, if at all</code></pre>
+  <p>
+    <code>onSuccess</code> with no parentheses refers to the closure itself, without running it —
+    the difference between <em>referring to</em> a closure and <em>calling</em> it. This is also the
+    exact line that requires <code>@escaping</code>: it lets the closure persist inside the object
+    after <code>performTaskLater</code> returns, which is precisely what "escaping" means. After this
+    line, the closure is saved but nothing has executed yet.
+  </p>
+
+  <div class="step-label"><span class="step-num">5</span><span class="step-text">End of performTaskLater</span></div>
+<pre><code class="language-swift">}</code></pre>
+  <p>
+    Closes the method body. Control returns to the caller — note that <code>onSuccess</code> has
+    been <em>stored</em> but never <em>called</em>, so the closure has not run by the time this
+    method finishes.
+  </p>
+
+  <div class="step-label"><span class="step-num">6</span><span class="step-text">Second method declaration</span></div>
+<pre><code class="language-swift">func finishPendingTask() {</code></pre>
+  <p>A plain method declaration taking no parameters and returning nothing.</p>
+
+  <div class="step-label"><span class="step-num">7</span><span class="step-text">Optional chaining on a call</span></div>
+<pre><code class="language-swift">pending?()   // *now* your closure actually runs</code></pre>
+  <p>
+    <code>pending?()</code> is optional chaining applied to a function call: if <code>pending</code>
+    currently holds a closure, call it; if it's <code>nil</code>, skip the call entirely with no
+    crash. (Contrast with force-calling via <code>pending!()</code>, which would crash the program
+    if <code>pending</code> were <code>nil</code>.) This is where the closure stored back in
+    <code>performTaskLater</code> — potentially much earlier, from a different call site — finally
+    executes.
+  </p>
+
+  <div class="step-label"><span class="step-num">8</span><span class="step-text">Clearing the stored closure</span></div>
+<pre><code class="language-swift">pending = nil</code></pre>
+  <p>
+    Resets <code>pending</code> after the call attempt, making each stored closure "one-shot" — a
+    second call to <code>finishPendingTask()</code> with nothing pending just does nothing. It also
+    releases the reference to the closure (and anything it captured), letting ARC reclaim that memory
+    once nothing else holds it.
+  </p>
+
+  <div class="step-label"><span class="step-num">9</span><span class="step-text">End of finishPendingTask, and of the class</span></div>
+<pre><code class="language-swift">    }
+}</code></pre>
+  <p>Closes <code>finishPendingTask</code>, then closes the <code>TaskRunner</code> class itself.</p>
+
+  <div class="step-label"><span class="step-num">10</span><span class="step-text">Creating an instance</span></div>
+<pre><code class="language-swift">let runner = TaskRunner()</code></pre>
+  <p>
+    Creates an instance of the class. <code>let</code> means <code>runner</code> will always refer to
+    this same object (though the object's own <code>pending</code> property can still change).
+    <code>TaskRunner()</code> calls the compiler-generated default initializer — no arguments needed,
+    since <code>pending</code> already defaults to <code>nil</code> as an optional. After this line,
+    <code>runner.pending</code> is <code>nil</code>.
+  </p>
+
+  <div class="step-label"><span class="step-num">11</span><span class="step-text">Calling performTaskLater with a trailing closure</span></div>
+<pre><code class="language-swift">runner.performTaskLater("upload") {
+    print("upload finished")
+}</code></pre>
+  <p>
+    Trailing closure syntax — equivalent to
+    <code>runner.performTaskLater("upload", onSuccess: { print("upload finished") })</code>.
+    Tracing through it: this prints <code>Scheduled upload</code>, stores the closure into
+    <code>pending</code>, and returns — <code>upload finished</code> has <strong>not</strong> printed
+    yet.
+  </p>
+
+  <div class="step-label"><span class="step-num">12</span><span class="step-text">Code after the call runs immediately</span></div>
+<pre><code class="language-swift">print("This runs immediately — performTaskLater already returned")</code></pre>
+  <p>
+    A plain print statement with no closures involved. It runs right after
+    <code>performTaskLater</code> returns, because that method stored the closure and exited rather
+    than blocking until the closure ran — the observable proof that storing a closure and calling it
+    are two separate events in time.
+  </p>
+
+  <div class="step-label"><span class="step-num">13</span><span class="step-text">Comment marking a narrative time gap</span></div>
+<pre><code class="language-swift">// ... arbitrarily later, e.g. once a real network response arrives ...</code></pre>
+  <p>
+    Not executable code — it signals, narratively, that some unspecified amount of time (or some
+    other real-world event, like a network callback) is meant to have passed before the next line.
+    Nothing in the sample enforces that gap, but in a real program <code>finishPendingTask()</code>
+    would typically be invoked from an entirely different context, such as a network library's own
+    completion handler.
+  </p>
+
+  <div class="step-label"><span class="step-num">14</span><span class="step-text">Finally triggering the stored closure</span></div>
+<pre><code class="language-swift">runner.finishPendingTask()</code></pre>
+  <p>
+    Calls <code>finishPendingTask()</code>. Inside: <code>pending?()</code> sees that
+    <code>pending</code> holds the closure from step 11 and runs it, printing
+    <code>upload finished</code>; then <code>pending</code> is set back to <code>nil</code>. This
+    produces the full three-line output shown in the code block above.
+  </p>
+
+  <div class="note">
+    <strong>What if <code>finishPendingTask()</code> were called a second time</strong> right after
+    this sequence? By then <code>pending</code> is already <code>nil</code>, so <code>pending?()</code>
+    sees <code>nil</code> and does nothing — no print, no crash. It's a silent no-op, which is exactly
+    the safety optional chaining buys you: with a force-unwrap (<code>pending!()</code>) instead, the
+    second call would crash. This also shows the design is intentionally one-shot — a closure passed
+    into <code>performTaskLater</code> is consumed exactly once; supporting repeat invocation would
+    need a different design (e.g., not niling out <code>pending</code>, or storing closures in a
+    collection instead of a single slot).
+  </div>
+
   <div class="tip">
     That's the whole idea in one sentence: <strong>a closure parameter lets the function you're
     calling — not you — decide if, when, and how many times your code runs.</strong> No parameters
