@@ -351,6 +351,7 @@
 
     <li><div class="section-label">Capturing &amp; Memory</div></li>
     <li><a href="#capturing-values">Capturing Values</a></li>
+    <li><a class="sub-link" href="#why-not-parameter">Why not just a parameter?</a></li>
     <li><a href="#capture-lists">Capture Lists</a></li>
     <li><a href="#reference-semantics">Reference Semantics</a></li>
 
@@ -1011,6 +1012,91 @@ incrementByTen()   // 10 — an entirely separate captured `total`
     named declaration.
   </div>
 
+  <h3 id="why-not-parameter">"Why Not Just Pass It as a Parameter?"</h3>
+
+  <div class="section-intro">
+    Capturing and passing a parameter often look interchangeable — for reading a value once, they
+    are. The gap opens up in two specific situations, both worth checking for whenever a capture
+    feels like it "should" just be a parameter instead.
+  </div>
+
+  <p><strong>1. You don't control the call.</strong> Something else decides what gets passed in.</p>
+
+<pre><code class="language-swift">let taxRate = 0.08
+
+func applyTax(_ price: Double, rate: Double) -> Double {
+    return price * (1 + rate)
+}
+
+prices.map(applyTax)   // ❌ won't compile — map always calls its closure with
+                        // exactly ONE argument (the element). There's no call
+                        // site where `rate` could be handed over, because
+                        // `map`, not you, writes that call.
+
+let withTax = prices.map { $0 * (1 + taxRate) }   // ✅ captures instead of being told</code></pre>
+
+  <p>
+    <code>map</code>, <code>filter</code>, <code>sorted</code>, a completion handler, a button's
+    tap handler, <code>Task { }</code> — in every one of these, some other piece of code owns the
+    call and has already fixed how many arguments it will pass. Capturing is the only way for your
+    code to bring in extra context that caller was never going to supply.
+  </p>
+
+  <p><strong>2. You want memory across separate calls.</strong></p>
+
+  <p>Start with a plain function and nothing else:</p>
+
+<pre><code class="language-swift">func increment(_ current: Int) -> Int {
+    return current + 1
+}
+
+increment(0)   // 1
+increment(0)   // 1 — same input, same output, every single time.
+               // The function has no idea it was ever called before.</code></pre>
+
+  <p>
+    To make this look like it's counting up, <em>the caller</em> has to remember the last result
+    and feed it back in by hand, every time:
+  </p>
+
+<pre><code class="language-swift">var current = 0
+current = increment(current)   // 1
+current = increment(current)   // 2
+current = increment(current)   // 3</code></pre>
+
+  <p>
+    This counts, but the memory is <code>current</code> — sitting out in the caller's code, not in
+    <code>increment</code>. The function itself is exactly as forgetful as it was on the first
+    line. Now compare a closure that captures its own counter instead of being handed one:
+  </p>
+
+<pre><code class="language-swift">func makeCounter() -> () -> Int {
+    var current = 0
+    return {
+        current += 1
+        return current
+    }
+}
+
+let counter = makeCounter()
+counter()   // 1
+counter()   // 2
+counter()   // 3</code></pre>
+
+  <p>
+    <code>counter()</code> takes <strong>zero arguments</strong> — there is no slot for anyone to
+    hand a value back in, even if they wanted to. It still counts up, because <code>current</code>
+    isn't a parameter at all here: it's a variable living inside the closure, created once when
+    <code>makeCounter()</code> ran, and kept alive for as long as <code>counter</code> itself
+    exists. Nobody outside is tracking it.
+  </p>
+
+  <div class="tip">
+    A parameter's value always comes from the caller, supplied fresh on every single call. A
+    captured variable's value lives inside the closure itself, so a call that takes no arguments at
+    all — like <code>counter()</code> — can still "remember" what happened last time.
+  </div>
+
 
   <!-- ══════════════════════════════════════════════════════════════════ -->
   <h2 id="capture-lists">Capture Lists</h2>
@@ -1355,6 +1441,14 @@ button.onTap?()   // safe to call even if nil</code></pre>
       <tr>
         <td>2026-07-03</td>
         <td>Initial version — capability comparison, full verbose-to-simplest ladders for sorting, map/filter/reduce, trailing and multiple trailing closures, capture lists, escaping/autoclosure/Sendable attributes, pitfalls, and cheat sheet.</td>
+      </tr>
+      <tr>
+        <td>2026-07-06</td>
+        <td>Added "Why Not Just Pass It as a Parameter?" under Capturing Values — the distinction that actually matters is (1) whether you control the call site at all (map/sorted/completion handlers fix their own closure's argument list) and (2) whether state needs to persist across separate calls without a caller re-supplying it each time.</td>
+      </tr>
+      <tr>
+        <td>2026-07-06</td>
+        <td>Rewrote situation 2 (memory across calls) as one self-contained example — a plain function that can't remember, the caller-side workaround that fakes memory, then a closure that captures its own counter and takes zero arguments. Removed the earlier version, which mixed two differently-named examples (<code>nextID</code>/<code>count</code> and <code>makeIncrementer</code>/<code>total</code>) and referenced a variable that wasn't shown in the snippet — a genuine clarity bug, not just a style choice.</td>
       </tr>
     </tbody>
   </table>
