@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demons — Living Doc</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-sidebar: #fafaf9;
+    --card-bg: #ffffff;
+    --card-border: #e5e2dc;
+    --text-primary: #1c1b19;
+    --text-secondary: #55524c;
+    --text-tertiary: #8a8680;
+    --accent: #7a2e2e;
+    --accent-soft: #f4e9e6;
+    --rule: #ece9e3;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--card-border);
+    padding: 28px 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar .kicker {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin: 0 0 4px;
+  }
+
+  .sidebar h1 {
+    font-size: 19px;
+    margin: 0 0 2px;
+    line-height: 1.25;
+  }
+
+  .sidebar .subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 22px;
+  }
+
+  .sidebar nav a {
+    display: block;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 7px 10px;
+    border-radius: 7px;
+    margin-bottom: 2px;
+  }
+
+  .sidebar nav a:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .sidebar nav .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+    margin: 18px 0 6px 10px;
+  }
+
+  /* Main content */
+  main {
+    padding: 48px 56px 100px;
+    max-width: 780px;
+  }
+
+  header.doc-header {
+    margin-bottom: 40px;
+  }
+
+  header.doc-header .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+
+  header.doc-header h1 {
+    font-size: 32px;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+
+  header.doc-header p.dek {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  section {
+    margin-bottom: 48px;
+    scroll-margin-top: 24px;
+  }
+
+  section h2 {
+    font-size: 22px;
+    margin: 0 0 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+
+  .chapter-card h3 {
+    font-size: 15px;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .chapter-card .roman {
+    color: var(--accent);
+    font-weight: 700;
+    font-variant: small-caps;
+    font-size: 13px;
+    min-width: 22px;
+  }
+
+  .chapter-card p {
+    margin: 0;
+    font-size: 14.5px;
+    color: var(--text-primary);
+  }
+
+  .who-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  @media (max-width: 900px) {
+    .who-grid { grid-template-columns: 1fr; }
+  }
+
+  .who-card h4 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+  }
+
+  .who-card dl { margin: 0; }
+  .who-card dt {
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  .who-card dt:first-child { margin-top: 0; }
+  .who-card dd {
+    margin: 2px 0 0;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+  }
+
+  .scene-list, .thread-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .scene-list li, .thread-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 14.5px;
+  }
+  .scene-list li:last-child, .thread-list li:last-child { border-bottom: none; }
+
+  .scene-list strong, .thread-list strong { color: var(--accent); }
+
+  .map-list {
+    counter-reset: chapnum;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .map-list li {
+    counter-increment: chapnum;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 14.5px;
+  }
+  .map-list li:last-child { border-bottom: none; }
+  .map-list li::before {
+    content: counter(chapnum);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 16px;
+  }
+
+  .callout {
+    background: var(--accent-soft);
+    border: 1px solid #e6d2ce;
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .callout strong { color: var(--accent); }
+
+  .note {
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    border-top: 1px solid var(--rule);
+    padding-top: 16px;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    main { padding: 32px 22px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <p class="kicker">Living Doc · Literature</p>
+    <h1>Demons</h1>
+    <p class="subtitle">Fyodor Dostoevsky — Parts&nbsp;I–II refresher &amp; Part&nbsp;III compass</p>
+    <nav>
+      <a href="#framing">Framing Notes</a>
+      <a href="#part-one">Part One</a>
+      <a href="#part-two">Part Two</a>
+      <a href="#who">Who's Who</a>
+      <a href="#scenes">Scenes to Hold Onto</a>
+      <a href="#threads">Threads Left Open</a>
+      <a href="#part-three">Map to Part Three</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="doc-header">
+      <p class="eyebrow">Reading Companion</p>
+      <h1>Demons — Refresher &amp; Compass</h1>
+      <p class="dek">A reinforcement pass on Parts One and Two, plus a spoiler-free map into Part Three. Built to sit alongside the text, not replace your LitCharts pass.</p>
+    </header>
+
+    <section id="framing">
+      <h2>I. Framing Notes</h2>
+      <div class="card">
+        <p style="margin:0 0 10px;"><strong>Title.</strong> <em>Бесы</em> (Bésy) means "demons" in the active sense — the spirits doing the possessing, not the people possessed. Garnett's 1916 title, <em>The Possessed</em>, has since been rejected by translators as pointing the wrong way.</p>
+        <p style="margin:0 0 10px;"><strong>Epigraphs.</strong> A stanza from Pushkin's poem "Demons," and Luke 8:32–36 — the Gerasene demoniac, whose devils enter a herd of swine that drown themselves. Dostoevsky read this as Russia's own allegory: the radical ideas ("demons") must be "drowned" out of the nation's youth before it can be healed. Stepan Trofimovich voices this reading himself, near the end.</p>
+        <p style="margin:0 0 10px;"><strong>The narrator.</strong> Anton Lavrentyevich G—v, a minor character and Stepan Trofimovich's confidant, chronicling the town's disaster after the fact — oddly omniscient for a secondary character. Treat him as a gossip-chorus lens more than a strict eyewitness.</p>
+        <p style="margin:0;"><strong>Historical spine.</strong> The conspiracy plot is grounded in the real 1869 murder of student Ivan Ivanov by Sergey Nechayev's revolutionary cell (the model for Shatov's murder), and Nechayev's actual manifesto, the <em>Catechism of a Revolutionary</em>, which supplies much of Pyotr Verkhovensky's operating logic.</p>
+      </div>
+    </section>
+
+    <section id="part-one">
+      <h2>II. Part One — Recap</h2>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">I</span> Introductory: Stepan Trofimovich's Biography</h3>
+        <p>The narrator sketches Stepan Trofimovich Verkhovensky: a once-promising liberal intellectual of the 1840s generation, now a kept idealist living off Varvara Petrovna Stavrogina's patronage at Skvoreshniki. Vain, financially dependent, mostly harmless — twenty years of a chaste, fraught quasi-marriage to Varvara Petrovna have left him her pampered ornament.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">II</span> Prince Harry. Matchmaking</h3>
+        <p>Varvara Petrovna returns from Switzerland troubled by an "intrigue" involving her son, Nikolai Stavrogin — nicknamed after Shakespeare's Prince Hal in his wild youth, riot promising eventual reform. Praskovya and daughter Liza arrive; word surfaces of a mysterious crippled woman connected to Stavrogin. Varvara Petrovna abruptly moves to marry Stepan Trofimovich to her ward Dasha — ostensibly generous, actually a maneuver.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">III</span> Someone Else's Sins</h3>
+        <p>Stepan Trofimovich accepts the engagement, financially cornered — then, fed by gossip, convinces himself he's being married off to cover "another man's sins." Overwrought letters follow. Pure dramatic irony: he's more right than he knows, just about the wrong man.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">IV</span> The Lame Girl</h3>
+        <p>The big set-piece. Marya Lebyadkina — disabled, half-mad, oddly perceptive — is drawn into Varvara Petrovna's orbit. Everyone converges at Skvoreshniki. Captain Lebyadkin rants about dishonor; Pyotr Stepanovich Verkhovensky strides in and dominates the room; Stavrogin arrives, calmly escorts Marya out as a devoted friend, and returns to explain nothing while Pyotr explains everything. Just as Varvara Petrovna relaxes, Stavrogin congratulates Dasha on her engagement in a tone that reopens every suspicion — she banishes Stepan Trofimovich. In the chaos, silent until now, Shatov strikes Stavrogin across the face. Stavrogin doesn't retaliate. Liza faints.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">V</span> The Wise Serpent</h3>
+        <p>Society buzzes; the principals go quiet — except Pyotr Stepanovich, who inserts himself everywhere. Eight days on, he calls on Stavrogin, and we see what he actually wants: not confirmation of an affair, but cooperation in radical schemes of his own. Stavrogin is polite, noncommittal, unreadable.</p>
+      </div>
+    </section>
+
+    <section id="part-two">
+      <h2>III. Part Two — Recap</h2>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">I</span> Night</h3>
+        <p>Stavrogin slips out to Filippov's house, where Shatov and Kirillov lodge. He needs Kirillov as a second for an impending duel with Artemy Gaganov. Kirillov agrees, and the two fall into one of the novel's central exchanges: suicide, freely chosen without fear, as proof of the "Man-God" — humanity's replacement for a God Kirillov doesn't believe exists.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">II</span> Night, continued</h3>
+        <p>Stavrogin moves to Shatov. The real backstory surfaces: Shatov has guessed Stavrogin and Marya are secretly married. Years earlier, it was Stavrogin who half-ironically fed Shatov the vision of Russia as God-bearing nation — an idea Shatov took on with total sincerity while Stavrogin never believed a word of it. The slap, in effect, was betrayed faith. Stavrogin warns Shatov, now an apostate from Pyotr's circle, that Pyotr may be planning to kill him.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">III</span> The Duel</h3>
+        <p>Stavrogin is intercepted on a bridge by Fedka, an escaped convict — once Stepan Trofimovich's own serf — who's been told he might have "use" for him regarding the Lebyadkins. Stavrogin refuses him flatly. At the Lebyadkins', he warns Captain Lebyadkin of a coming public acknowledgment and cuts off money. With Marya, the scene turns eerie: lucid with fear, she accuses him of being an impostor and demands to know what he's done with her real "Prince." He shoves her and leaves, nearly assaulting Fedka again before laughing, emptying his wallet at him, and walking off. Next day: the duel. Stavrogin deliberately misses, refusing to treat it seriously — which enrages Gaganov more than a real contest would have.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">IV</span> All in Expectation</h3>
+        <p>Back at Skvoreshniki, Stavrogin tells Dasha — his strange, steady confidante — about the duel and about paying off Fedka, almost daring her to guess what that money is a down payment on. Meanwhile the town's temperature rises: Pyotr Stepanovich cultivates Yulia Mikhaylovna, and a mood of cynical, destabilizing "fun" — propaganda, factory agitation — spreads through her circle.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">V</span> Before the Fête</h3>
+        <p>Preparations build toward Yulia Mikhaylovna's Literary Fête, which Pyotr Stepanovich intends to hijack. He visits Kirillov to remind him of their "agreement," and invites both Kirillov and Shatov to that evening's meeting of his circle.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">VI</span> Pyotr Stepanovich Bustles About</h3>
+        <p>Pyotr calls on Stavrogin just as Mavriky Nikolaevich is leaving. Stavrogin agrees to come to the meeting, where we meet "our people" properly — Liputin, Lyamshin, Tolkachenko, Virginsky — and Shigalyov begins unfolding his social program.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">VII</span> Among Our Own</h3>
+        <p>Shigalyov's theory lands: history, pursued to its end, produces not utopia but totalitarian order — nine-tenths of humanity enslaved to secure the freedom of the rest. Pyotr forces the question of real commitment: would anyone inform the police about a coming political murder? As the room scrambles to say no, Shatov stands, calls Pyotr a scoundrel and a spy, and walks out — followed by Stavrogin and Kirillov. This is the moment Shatov is marked.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">VIII</span> Ivan the Tsarevich</h3>
+        <p>Pyotr chases the three down; at Kirillov's, with Fedka waiting, he demands Stavrogin fund the Lebyadkin "problem." Stavrogin refuses, throws Pyotr to the ground when he won't back off — and Pyotr dissolves into a raving, worshipful monologue, half declaration of love, half pitch, revealing his scheme has nothing to do with socialism and everything to do with popular legend: casting Stavrogin as a hidden, legendary true prince for the masses to rally behind. Stavrogin stays cold, but doesn't say no.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">IX</span> A Raid at Stepan Trofimovich's</h3>
+        <p>The Governor's overzealous assistant, wrongly convinced Stepan Trofimovich is a subversive ringleader, has his rooms searched. A shaken Stepan Trofimovich complains to the Governor, arriving amid a protest by Spigulin factory workers. Governor von Lembke, already fraying under his wife's entanglement with Pyotr Stepanovich, handles both crises badly.</p>
+      </div>
+
+      <div class="card chapter-card">
+        <h3><span class="roman">X</span> Filibusters. A Fatal Morning</h3>
+        <p>Yulia Mikhaylovna's circle returns from Skvoreshniki; the Governor is publicly humiliated by his own wife. Stavrogin walks in, and Liza confronts him loudly about harassment from Captain Lebyadkin. His answer lands like a bomb: he confirms, calmly, in public, that Marya Lebyadkina is his wife. Varvara Petrovna is horrified. Stavrogin smiles and walks out. Liza follows. Part Two ends here.</p>
+      </div>
+    </section>
+
+    <section id="who">
+      <h2>IV. Who's Who — A Compass</h2>
+      <div class="who-grid">
+
+        <div class="card who-card">
+          <h4>Stavrogin–Verkhovensky Axis</h4>
+          <dl>
+            <dt>Varvara Petrovna Stavrogina</dt>
+            <dd>Wealthy widow, patroness of Stepan Trofimovich, mother of Nikolai.</dd>
+            <dt>Stepan Trofimovich Verkhovensky</dt>
+            <dd>Her longtime companion, 1840s idealist relic, Stavrogin's tutor, Pyotr's father.</dd>
+            <dt>Nikolai Vsevolodovich Stavrogin</dt>
+            <dd>The enigmatic center; charismatic, morally void, secretly married to Marya.</dd>
+            <dt>Pyotr Stepanovich Verkhovensky</dt>
+            <dd>Stepan Trofimovich's son; the novel's Nechayev figure, revolutionary manipulator.</dd>
+          </dl>
+        </div>
+
+        <div class="card who-card">
+          <h4>Shatov–Lebyadkin–Tushin Circle</h4>
+          <dl>
+            <dt>Ivan Pavlovich Shatov</dt>
+            <dd>Varvara Petrovna's former ward; ex-socialist, now fervent Russian-Christian nationalist. Slaps Stavrogin.</dd>
+            <dt>Darya Pavlovna (Dasha)</dt>
+            <dd>Shatov's sister; Stavrogin's quiet confidante.</dd>
+            <dt>Marya Timofeevna Lebyadkina</dt>
+            <dd>Disabled, "holy fool"-like; Stavrogin's secret wife.</dd>
+            <dt>Captain Lebyadkin</dt>
+            <dd>Her drunken, blackmailing brother, a self-styled poet.</dd>
+            <dt>Lizaveta (Liza) Tushina</dt>
+            <dd>Beautiful, wealthy; entangled with Stavrogin since an earlier encounter abroad.</dd>
+            <dt>Mavriky Nikolaevich</dt>
+            <dd>Liza's devoted cousin and fiancé.</dd>
+            <dt>Praskovya Ivanovna</dt>
+            <dd>Liza's mother, old friend/rival of Varvara Petrovna.</dd>
+          </dl>
+        </div>
+
+        <div class="card who-card">
+          <h4>Kirillov's Circle / The "Quintet"</h4>
+          <dl>
+            <dt>Alexei Nilych Kirillov</dt>
+            <dd>Engineer; philosopher of suicide as the ultimate assertion of will.</dd>
+            <dt>Shigalyov</dt>
+            <dd>Theorist; a program starting from total freedom, ending in total despotism.</dd>
+            <dt>Liputin, Lyamshin, Tolkachenko, Virginsky</dt>
+            <dd>The rest of "our people" — true believers and hangers-on.</dd>
+            <dt>Fedka the Convict</dt>
+            <dd>Escaped convict, formerly Stepan Trofimovich's serf; the group's instrument.</dd>
+          </dl>
+        </div>
+
+        <div class="card who-card">
+          <h4>Town Society &amp; Narrator</h4>
+          <dl>
+            <dt>Andrey Antonovich von Lembke</dt>
+            <dd>The Governor; well-meaning, increasingly unstable.</dd>
+            <dt>Yulia Mikhaylovna von Lembke</dt>
+            <dd>His wife; her vanity is Pyotr Stepanovich's chief lever on the town.</dd>
+            <dt>Semyon Karmazinov</dt>
+            <dd>Vain literary lion — Dostoevsky's satirical jab at Turgenev.</dd>
+            <dt>Anton Lavrentyevich G—v</dt>
+            <dd>Chronicler, Stepan Trofimovich's confidant — the "we" behind the telling.</dd>
+          </dl>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="scenes">
+      <h2>V. Scenes Worth Holding Onto</h2>
+      <ul class="scene-list">
+        <li><strong>The Skvoreshniki explosion (I.IV).</strong> Marya's arrival, Pyotr's entrance, Stavrogin's icy calm, the slap. The whole cast set in motion.</li>
+        <li><strong>Marya's accusation (II.III).</strong> Even confused, she calls Stavrogin an impostor and asks what he's done with her real "Prince" — the first naming of the pretender theme Pyotr later builds his whole scheme around.</li>
+        <li><strong>The two "Night" chapters (II.I–II).</strong> Kirillov's suicide philosophy and Shatov's God-bearing-nation confrontation are two halves of one argument — both men shaped by ideas Stavrogin planted without believing either himself.</li>
+        <li><strong>The loyalty-test meeting (II.VII).</strong> Shigalyov's totalitarian arithmetic, then Shatov's public break with Pyotr — the moment that seals his fate.</li>
+        <li><strong>"Ivan the Tsarevich" (II.VIII).</strong> Pyotr's confession of what the "revolution" is actually for. The ideological hinge of the book.</li>
+        <li><strong>The public acknowledgment (II.X).</strong> Stavrogin detonates the secret everyone's circled for two hundred pages, in public, without apparent cost to himself.</li>
+      </ul>
+    </section>
+
+    <section id="threads">
+      <h2>VI. Threads Left Open Heading Into Part Three</h2>
+      <ul class="thread-list">
+        <li>Now that the marriage is public — what happens to the Lebyadkins, the money, and Fedka's unspoken "offer"?</li>
+        <li>Pyotr has marked Shatov as a danger. Shatov also holds real information that could expose the group. How long can that stand?</li>
+        <li>Kirillov has an "agreement" to die on the group's schedule, not his own. Does his philosophy survive being used?</li>
+        <li>What does Pyotr actually want from Stavrogin now that the "Tsarevich" idea is on the table — and does Stavrogin want anything back?</li>
+        <li>Liza followed Stavrogin out the door. Her engagement to Mavriky is still, technically, standing.</li>
+        <li>The Literary Fête everyone's been building toward for two hundred pages hasn't happened yet.</li>
+      </ul>
+    </section>
+
+    <section id="part-three">
+      <h2>VII. A Map for Part Three <span style="font-weight:400;color:var(--text-tertiary);font-size:15px;">— no spoilers</span></h2>
+      <p style="color:var(--text-secondary);font-size:14.5px;margin-top:-6px;">Structurally, Part Three pulls every thread above at once — expect much higher character-density per chapter than Parts One and Two, especially across the fête chapters.</p>
+
+      <ol class="map-list">
+        <li>The Fête — First Part</li>
+        <li>The End of the Fête</li>
+        <li>A Romance Ended</li>
+        <li>The Last Resolution</li>
+        <li>A Wanderer</li>
+        <li>A Busy Night</li>
+        <li>Stepan Trofimovich's Last Wandering</li>
+        <li>Conclusion</li>
+      </ol>
+
+      <div class="callout" style="margin-top:16px;">
+        <strong>Pacing tip.</strong> The fête (I–II) assembles nearly the entire cast in one place — worth reading in a single sitting if you can, since who's watching whom matters as much as what's said.
+      </div>
+
+      <div class="callout" style="margin-top:12px;">
+        <strong>On "At Tikhon's."</strong> Most modern editions include this chapter as an appendix — censored from the 1872 publication, though Dostoevsky considered it essential to understanding Stavrogin. Where it belongs in the reading order is genuinely disputed among editors. Worth knowing it exists so it doesn't catch you off guard, whichever way your edition handles it.
+      </div>
+
+      <p class="note">Sources consulted for historical/publication facts: Wikipedia, "Demons (Dostoevsky novel)"; chapter titles cross-referenced against Project Gutenberg / Standard Ebooks editions and course syllabus material. Plot content is original synthesis, not reproduced from any study guide.</p>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

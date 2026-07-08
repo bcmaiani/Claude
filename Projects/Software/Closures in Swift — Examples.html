@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Closures in Swift — Examples · Living Doc</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/swift.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a202c;
+    --text-muted: #718096;
+    --accent: #3182ce;
+    --accent-light: #ebf4ff;
+    --code-bg: #f7f9fc;
+    --nav-width: 250px;
+    --note-bg: #fffbeb;
+    --note-border: #f6ad55;
+    --tip-bg: #f0fff4;
+    --tip-border: #68d391;
+    --warn-bg: #fff5f5;
+    --warn-border: #fc8181;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── Layout ── */
+  #wrapper { display: flex; min-height: 100vh; }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--nav-width);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 24px 0;
+    z-index: 100;
+  }
+
+  nav .logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 20px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  nav ul { list-style: none; }
+  nav li { display: flex; flex-direction: column; }
+
+  nav a {
+    display: block;
+    padding: 6px 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    border-left: 3px solid transparent;
+    transition: all .15s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  nav .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #a0aec0;
+    padding: 16px 20px 4px;
+  }
+
+  nav .sub-link {
+    padding-left: 32px;
+    font-size: 13px;
+  }
+
+  main {
+    margin-left: var(--nav-width);
+    max-width: 860px;
+    padding: 48px 56px 80px;
+    width: 100%;
+  }
+
+  /* ── Typography ── */
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+  h2 {
+    font-size: 1.5rem; font-weight: 700;
+    margin: 56px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 28px 0 10px; }
+  h4 { font-size: .95rem; font-weight: 600; margin: 20px 0 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+
+  p { margin-bottom: 14px; }
+  ul, ol { margin: 10px 0 14px 24px; }
+  li { margin-bottom: 4px; }
+
+  strong { font-weight: 600; }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Code ── */
+  pre {
+    background: var(--code-bg) !important;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    margin: 14px 0 20px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  code:not(pre code) {
+    background: #edf2f7;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+
+  /* ── Code label ── */
+  .code-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 20px 0 6px;
+  }
+
+  .step-label {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 20px 0 6px;
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .step-label .step-text {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ── Callout boxes ── */
+  .note, .tip, .warn, .verdict {
+    border-left: 4px solid;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 10px 0 20px;
+    font-size: 14px;
+  }
+  .note    { background: var(--note-bg); border-color: var(--note-border); }
+  .tip     { background: var(--tip-bg);  border-color: var(--tip-border);  }
+  .warn    { background: var(--warn-bg); border-color: var(--warn-border); }
+  .verdict { background: var(--accent-light); border-color: var(--accent); }
+
+  .note::before    { content: "📝 Note: ";            font-weight: 600; }
+  .tip::before     { content: "💡 Tip: ";             font-weight: 600; }
+  .warn::before    { content: "⚠️ Watch out: ";        font-weight: 600; }
+  .verdict::before { content: "Why not a plain func? "; font-weight: 600; color: var(--accent); }
+
+  /* ── Tables ── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px;
+    font-size: 13.5px;
+  }
+  .ref-table th {
+    background: #f7fafc;
+    text-align: left;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+  }
+  .ref-table td {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #f7fafc; }
+  .yes { color: #276749; font-weight: 600; }
+  .no  { color: #9b2c2c; font-weight: 600; }
+
+  /* ── Cover ── */
+  .cover {
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+    padding-bottom: 24px;
+  }
+  .cover .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-top: 6px;
+  }
+  .meta {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-ga   { background: #c6f6d5; color: #276749; }
+  .badge-beta { background: #fefcbf; color: #744210; }
+  .badge-soon { background: #fed7aa; color: #7b341e; }
+
+  /* ── Tier badges (this doc's own vocabulary) ── */
+  .tier {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .tier-required   { background: #c6f6d5; color: #276749; }
+  .tier-workaround { background: #fefcbf; color: #744210; }
+  .tier-optional   { background: #e2e8f0; color: #4a5568; }
+
+  /* ── Two-col comparison ── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 14px 0 20px;
+  }
+  .compare-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .compare-col h4 {
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+    margin-bottom: 8px;
+    margin-top: 0;
+  }
+  .compare-col ul {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── Section intro ── */
+  .section-intro {
+    background: var(--accent-light);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    border: 1px solid #bee3f8;
+  }
+
+  /* ── Footer ── */
+  .footer-note {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div id="wrapper">
+
+<!-- ─────────── SIDEBAR ─────────── -->
+<nav id="sidebar">
+  <div class="logo">Swift Closures — Examples</div>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+
+    <li><div class="section-label">Collection Operations</div></li>
+    <li><a class="sub-link" href="#map-basic">map — basic transform</a></li>
+    <li><a class="sub-link" href="#map-capture">map — capturing a rate</a></li>
+    <li><a class="sub-link" href="#filter-capture">filter — capturing a threshold</a></li>
+    <li><a class="sub-link" href="#reduce-into">reduce(into:) — word frequency</a></li>
+    <li><a class="sub-link" href="#sorted-multi">sorted — multi-key comparator</a></li>
+    <li><a class="sub-link" href="#foreach-capture">forEach — mutating an outer var</a></li>
+
+    <li><div class="section-label">Completion Handlers</div></li>
+    <li><a class="sub-link" href="#completion-capture">Escaping completion + capture</a></li>
+    <li><a class="sub-link" href="#continuation-bridge">Bridging to async/await</a></li>
+
+    <li><div class="section-label">Stored Closures</div></li>
+    <li><a class="sub-link" href="#stored-ontap">onTap-style property</a></li>
+    <li><a class="sub-link" href="#lazy-property">lazy var + closure</a></li>
+
+    <li><div class="section-label">State Capture</div></li>
+    <li><a class="sub-link" href="#id-generator">ID generator factory</a></li>
+    <li><a class="sub-link" href="#memoize">Memoization cache</a></li>
+    <li><a class="sub-link" href="#debounce">Debouncer</a></li>
+
+    <li><div class="section-label">Custom Control Flow</div></li>
+    <li><a class="sub-link" href="#retry">retry(times:)</a></li>
+    <li><a class="sub-link" href="#measure">measure(_:)</a></li>
+    <li><a class="sub-link" href="#transaction">Transaction / rollback</a></li>
+
+    <li><div class="section-label">Autoclosures</div></li>
+    <li><a class="sub-link" href="#require-autoclosure">Custom require(_:_:)</a></li>
+    <li><a class="sub-link" href="#first-non-nil">Lazy nil-coalescing</a></li>
+
+    <li><div class="section-label">Closures as Values</div></li>
+    <li><a class="sub-link" href="#strategy-dictionary">Dictionary of strategies</a></li>
+    <li><a class="sub-link" href="#function-composition">Function composition (&gt;&gt;&gt;)</a></li>
+
+    <li><div class="section-label">Concurrency</div></li>
+    <li><a class="sub-link" href="#task-capture">Task { } capture</a></li>
+    <li><a class="sub-link" href="#sendable-sending">Sendable, sending, weak let</a></li>
+
+    <li><div class="section-label">The Honest Exception</div></li>
+    <li><a class="sub-link" href="#recursive-wrapper">Recursive closure — wrapper</a></li>
+    <li><a class="sub-link" href="#recursive-var">Recursive closure — var trick</a></li>
+
+    <li><div class="section-label">Reference</div></li>
+    <li><a href="#cheatsheet">Cheat Sheet</a></li>
+    <li><a href="#changelog">Changelog</a></li>
+  </ul>
+</nav>
+
+<!-- ─────────── MAIN ─────────── -->
+<main>
+
+  <div class="cover" id="overview">
+    <h1>Closures in Swift — Examples</h1>
+    <p class="subtitle">A living gallery of copiously annotated closure examples, organized by what they're used for rather than by syntax</p>
+  </div>
+  <p class="meta">Last updated: 2026-07-06</p>
+
+  <p>
+    This doc is a companion to
+    <a href="Closures%20in%20Swift%20%E2%80%94%20Living%20Doc.html">Closures in Swift — Living Doc</a>,
+    which covers syntax, capture semantics, and attributes in tutorial form. This one skips the
+    tutorial and goes straight to real-shaped code: one example after another, each with a plain-English
+    annotation and — the point of the whole exercise — an explicit answer to <strong>"could a
+    <code>func</code> do this instead?"</strong>
+  </p>
+
+  <div class="section-intro">
+    That question has three honest answers, and every example below is tagged with one:
+  </div>
+
+  <p>
+    <span class="tier tier-required">Requires a closure</span> — capturing local state, deferring
+    evaluation, or escaping into a stored/async lifetime. A <code>func</code> structurally cannot do
+    this; there's no workaround that isn't itself a closure in disguise.
+  </p>
+  <p>
+    <span class="tier tier-workaround">Func + workaround</span> — possible with a plain
+    <code>func</code>, but only by promoting local state to a global, a stored property, or an
+    extra boolean flag — moving something that wanted to be scoped to one call site out into the
+    open for the whole program to see.
+  </p>
+  <p>
+    <span class="tier tier-optional">Func works fine</span> — the closure is purely a convenience
+    here. Included on purpose, because pretending every closure is load-bearing would be
+    dishonest. Recognizing this case is just as useful as recognizing the other two.
+  </p>
+
+  <div class="tip">
+    The short version of "control, not data": a closure's payload usually isn't the values it takes
+    or returns — it's <em>when</em>, <em>how many times</em>, and <em>with what captured
+    context</em> it runs, none of which shows up in its type signature. Watch for that thread
+    running through nearly every "requires a closure" verdict below.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       COLLECTION OPERATIONS
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="collections">Collection Operations</h2>
+
+  <h3 id="map-basic">map — basic transform <span class="tier tier-optional">Func works fine</span></h3>
+<pre><code class="language-swift">let prices = [12.99, 5.50, 22.00, 8.75]
+
+func applyStandardTax(_ price: Double) -> Double {
+    return price * 1.08
+}
+
+let withTaxViaFunc    = prices.map(applyStandardTax)
+let withTaxViaClosure = prices.map { $0 * 1.08 }
+// Both produce [14.0292, 5.94, 23.76, 9.45]</code></pre>
+  <p>
+    <code>map</code> only needs a value of type <code>(Double) -> Double</code> — it doesn't care
+    whether that value is a named function or an anonymous closure literal, because in Swift
+    they're the same underlying type.
+  </p>
+  <div class="verdict">
+    A named <code>func</code> works identically here. The closure's only advantage is not having
+    to invent and declare a name (<code>applyStandardTax</code>) for a one-off calculation used
+    exactly once.
+  </div>
+
+  <h3 id="map-capture">map — capturing a runtime rate <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">let taxRate = 0.08   // scoped to right here, nothing more — no parameter, no global
+let withTax = prices.map { $0 * (1 + taxRate) }   // ...yet the closure sees it, simply
+                                                    // because it's written in this same scope</code></pre>
+  <p>
+    The closure reaches directly into the enclosing scope and reads <code>taxRate</code> — no
+    parameter, no global, just a local constant that happens to live one line above.
+  </p>
+  <div class="verdict">
+    A top-level <code>func applyTax(_ price: Double) -> Double</code> has no way to see
+    <code>taxRate</code> at all — a top-level function has no enclosing scope to capture in the
+    first place. (A <em>nested</em> func, declared inside another function, could see
+    <code>taxRate</code> too — nested funcs capture their enclosing scope exactly like closure
+    literals do. What's unique here is writing the logic anonymously, inline, at the call site.)
+    The nearest func-only fix that keeps things top-level is currying:
+<pre><code class="language-swift">func makeTaxApplier(rate: Double) -> (Double) -> Double {
+    return { price in price * (1 + rate) }   // ← still a closure, just returned from a func
+}
+prices.map(makeTaxApplier(rate: taxRate))</code></pre>
+    which doesn't actually avoid closures — it just relocates one into a return value. Once
+    behavior needs to be parameterized by a value known only at runtime, something has to close
+    over that value, full stop.
+  </div>
+
+  <div class="note">
+    <strong>"Couldn't I just pass <code>taxRate</code> in as a second parameter?"</strong> No —
+    and the reason is that <em>you</em> don't write the call to your own closure here,
+    <code>map</code> does. <code>map</code>'s implementation always invokes its closure with
+    exactly one argument, the element:
+    <code>prices.map(applyTax)</code> fails to compile the moment <code>applyTax</code> needs a
+    second <code>rate</code> parameter, because there is no call site — inside <code>map</code>,
+    buried in the standard library — where you could hand <code>rate</code> over. Capturing sidesteps
+    that entirely: the closure already knows <code>taxRate</code> before <code>map</code> ever
+    calls it, so it doesn't need to be told.
+  </div>
+
+  <h3 id="filter-capture">filter — capturing a threshold <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">let scores = [55, 82, 91, 40, 76, 88]
+let passingScore = 60   // could come from a config file, a user setting, anything non-literal
+
+let passed = scores.filter { $0 >= passingScore }
+// [82, 91, 76, 88]</code></pre>
+  <div class="verdict">
+    Same trap as the tax example: <code>filter</code>, not you, decides how many arguments your
+    closure receives — exactly one, the element. A top-level
+    <code>func isPassing(_ score: Int, threshold: Int) -> Bool</code> can't be handed to
+    <code>filter</code> at all, because <code>filter</code> has no idea it's supposed to supply
+    <code>threshold</code>. "Pass it in explicitly" was never actually available at this call
+    site — only capturing <code>passingScore</code>, or promoting it to global scope, are real
+    options, and the global route isn't a shorter-vs-longer tradeoff: it makes the value visible
+    to everything else in the file or module, drops any automatic cleanup, and breaks the moment
+    two call sites want their own independent <code>passingScore</code> at once.
+  </div>
+
+  <h3 id="reduce-into">reduce(into:) — word frequency count <span class="tier tier-optional">Func works fine</span></h3>
+<pre><code class="language-swift">let words = "the cat sat on the mat the cat ran".split(separator: " ").map(String.init)
+
+let frequencies = words.reduce(into: [String: Int]()) { counts, word in
+    counts[word, default: 0] += 1
+}
+// ["the": 3, "cat": 2, "sat": 1, "on": 1, "mat": 1, "ran": 1]</code></pre>
+  <p>
+    <code>reduce(into:)</code> hands the closure an <code>inout</code>-like accumulator it mutates
+    directly, instead of returning a brand-new value every iteration the way plain
+    <code>reduce(_:_:)</code> does — cheaper for a growing dictionary, since nothing gets copied on
+    each step.
+  </p>
+  <div class="verdict">
+    This closure captures nothing from the outside — it only touches its own two parameters. A
+    named <code>func tally(_ counts: inout [String: Int], _ word: String)</code> plugs into
+    <code>reduce(into:)</code> exactly as well. Closures win here purely on "don't make me name
+    and declare this separately."
+  </div>
+
+  <h3 id="sorted-multi">sorted — multi-key comparator <span class="tier tier-optional">Func works fine</span></h3>
+<pre><code class="language-swift">struct Player { let name: String; let score: Int }
+
+let players = [
+    Player(name: "Nadia", score: 91),
+    Player(name: "Omar",  score: 91),
+    Player(name: "Priya", score: 78)
+]
+
+let ranked = players.sorted {
+    if $0.score != $1.score { return $0.score > $1.score }   // higher score first
+    return $0.name &lt; $1.name                                 // tie-break alphabetically
+}
+// Nadia (91), Omar (91), Priya (78)</code></pre>
+  <div class="verdict">
+    Multi-branch but self-contained — this comparator captures nothing external. A named
+    <code>func rankPlayers(_ a: Player, _ b: Player) -> Bool</code> would work identically and is
+    arguably more readable once the tie-break logic grows past a line or two. Complexity alone
+    isn't a reason to prefer a closure; capturing state is.
+  </div>
+
+  <h3 id="foreach-capture">forEach — mutating an outer variable <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">var total = 0
+[1, 2, 3, 4].forEach { total += $0 }
+// total == 10</code></pre>
+  <div class="verdict">
+    The closure mutates <code>total</code>, a <code>var</code> declared one line above, by
+    reference. Swift's own language guide calls named functions "special cases of closures" —
+    and a <em>nested</em> func inside the same scope could do this too — but a genuinely
+    top-level, separately-declared func has no access to <code>total</code> whatsoever. There's no
+    parameter you could add to a free-standing func that would let it reach back into this
+    specific call site's local variable.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       COMPLETION HANDLERS
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="completion-handlers">Completion Handlers &amp; Escaping Callbacks</h2>
+
+  <h3 id="completion-capture">Escaping completion handler with capture <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">struct User { let id: Int; let name: String }
+struct APIClient {
+    func fetchUser(id: Int, completion: @escaping (Result&lt;User, Error&gt;) -> Void) {
+        // ... kicks off a network request; completion runs later, off this call stack ...
+    }
+}
+
+let client = APIClient()
+var requestCount = 0
+
+client.fetchUser(id: 42) { result in
+    requestCount += 1
+    switch result {
+    case .success(let user): print("Got \(user.name) — request #\(requestCount)")
+    case .failure(let error): print("Failed: \(error)")
+    }
+}</code></pre>
+  <div class="verdict">
+    The closure captures <code>requestCount</code> and mutates it whenever the response eventually
+    arrives — possibly on a different thread, possibly seconds later. A top-level func has no
+    enclosing scope to reach back into; the only func-only fix is promoting
+    <code>requestCount</code> to a global or an instance property, which changes its lifetime and
+    visibility for the entire program just to serve one call site.
+  </div>
+
+  <h3 id="continuation-bridge">Bridging a callback API to async/await <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">func fetchUser(id: Int) async throws -> User {
+    try await withCheckedThrowingContinuation { continuation in
+        client.fetchUser(id: id) { result in
+            continuation.resume(with: result)
+        }
+    }
+}</code></pre>
+  <div class="verdict">
+    Two nested closures, each capturing something from just outside it: the outer one captures
+    <code>continuation</code> so the inner completion handler can resume it exactly once. This
+    bridging pattern — write an anonymous block right at the call site, capturing a value that
+    exists nowhere else — is precisely what <code>@escaping</code> closures were designed for; a
+    named func would need its own dedicated continuation-holding property, recreating a class just
+    to replace one closure.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       STORED CLOSURES AS PROPERTIES
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="stored-properties">Stored Closures as Properties</h2>
+
+  <h3 id="stored-ontap">onTap-style property <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">final class Button {
+    var onTap: (() -> Void)?
+    func simulateTap() { onTap?() }
+}
+
+let saveButton = Button()
+var saveCount = 0
+
+saveButton.onTap = {
+    saveCount += 1
+    print("Saved \(saveCount) time(s)")
+}
+
+saveButton.simulateTap()   // Saved 1 time(s)
+saveButton.simulateTap()   // Saved 2 time(s)</code></pre>
+  <div class="verdict">
+    <code>Button</code> itself has no idea <code>saveCount</code> exists — it lives in the scope
+    where the button was configured, not inside the class. You could assign a named func reference
+    to <code>onTap</code> too, but that func could never see this particular
+    <code>saveCount</code>; only a closure literal written at this exact call site can reach into
+    this exact local variable.
+  </div>
+
+  <h3 id="lazy-property">lazy var + immediately-invoked closure <span class="tier tier-workaround">Func + workaround</span></h3>
+<pre><code class="language-swift">class ReportGenerator {
+    let data: [Int]
+
+    lazy var summary: String = {
+        let total = data.reduce(0, +)
+        let average = Double(total) / Double(data.count)
+        return "Total: \(total), Average: \(average)"
+    }()
+
+    init(data: [Int]) { self.data = data }
+}</code></pre>
+  <p>
+    The trailing <code>()</code> calls the closure immediately, but <code>lazy</code> means that
+    call only actually happens the first time <code>summary</code> is read — and the result is
+    cached from then on.
+  </p>
+  <div class="verdict">
+    A <code>func computeSummary()</code> could compute the same string, but you'd lose the
+    automatic once-only caching — you'd have to hand-roll it with a private
+    <code>Bool</code> flag and a backing <code>var</code>:
+<pre><code class="language-swift">private var _summary: String?
+func summary() -> String {
+    if let cached = _summary { return cached }
+    let total = data.reduce(0, +)
+    let result = "Total: \(total)"
+    _summary = result
+    return result
+}</code></pre>
+    Workable, but it's the closure-based <code>lazy var</code> automating exactly this pattern for
+    you — one line instead of five.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       STATE CAPTURE: FACTORIES & MEMOIZATION
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="state-capture">State Capture: Factories &amp; Memoization</h2>
+
+  <div class="section-intro">
+    Every example in this section could raise "why not just pass the value in as a parameter?" —
+    and here the answer isn't about who controls the call (as with <code>map</code> earlier), it's
+    that a parameter never has memory. A parameter is only ever what the caller hands over, fresh,
+    on that one call — it can't remember anything from a previous call unless the caller tracks it
+    and passes it back in themselves, every time. A capture gives the closure its own private
+    storage that persists silently between separate calls, with no caller involved in keeping it
+    up to date.
+  </div>
+
+  <h3 id="id-generator">Stateful ID generator factory <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">func makeIDGenerator(prefix: String) -> () -> String {
+    var count = 0
+    return {
+        count += 1
+        return "\(prefix)-\(count)"
+    }
+}
+
+let userIDGen = makeIDGenerator(prefix: "USR")
+userIDGen()   // "USR-1"
+userIDGen()   // "USR-2"
+
+let orderIDGen = makeIDGenerator(prefix: "ORD")
+orderIDGen()   // "ORD-1" — a completely independent counter</code></pre>
+  <div class="verdict">
+    Each call to <code>makeIDGenerator</code> creates a fresh, private <code>count</code> that only
+    the returned closure can see or mutate — two generators never share state, even though they
+    came from the same function. A <code>func</code> cannot be "returned with private memory
+    attached"; the closure <em>is</em> that memory plus the code that touches it, bundled as one
+    value.
+  </div>
+
+  <h3 id="memoize">Generic memoization cache <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">func memoize&lt;Input: Hashable, Output&gt;(_ fn: @escaping (Input) -> Output) -> (Input) -> Output {
+    var cache: [Input: Output] = [:]
+    return { input in
+        if let cached = cache[input] { return cached }
+        let result = fn(input)
+        cache[input] = result
+        return result
+    }
+}
+
+func slowSquare(_ n: Int) -> Int {
+    print("Computing...")
+    return n * n
+}
+
+let fastSquare = memoize(slowSquare)
+fastSquare(5)   // prints "Computing...", returns 25
+fastSquare(5)   // returns 25 immediately — no print, cache hit</code></pre>
+  <div class="verdict">
+    This is "control, not data" in its purest form: <code>fastSquare</code>'s type signature,
+    <code>(Int) -> Int</code>, is <em>identical</em> to <code>slowSquare</code>'s. Nothing in the
+    signature reveals that one of them remembers previous calls. The difference lives entirely in
+    the hidden <code>cache</code> dictionary the closure captured — a func has no mechanism to
+    carry private, persistent memory like this between separate calls.
+  </div>
+
+  <h3 id="debounce">Debouncing rapid input <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">final class Debouncer {
+    private var pendingWork: DispatchWorkItem?
+    private let delay: TimeInterval
+    init(delay: TimeInterval) { self.delay = delay }
+
+    func run(_ action: @escaping () -> Void) {
+        pendingWork?.cancel()
+        let work = DispatchWorkItem(block: action)
+        pendingWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+}
+
+let searchDebouncer = Debouncer(delay: 0.3)
+
+func handleSearchInput(_ text: String) {
+    searchDebouncer.run {
+        print("Searching for \(text)")   // captures this specific keystroke's text
+    }
+}</code></pre>
+  <div class="verdict">
+    Every keystroke hands <code>run</code> a fresh closure capturing that keystroke's own
+    <code>text</code>, and the previous pending closure gets cancelled before it ever runs.
+    <code>Debouncer</code> decides <em>if</em> and <em>when</em> your code actually executes —
+    which is the whole "control, not data" idea again: the closure's inputs and outputs
+    (<code>() -> Void</code>) are trivial; what matters is that its execution is entirely out of
+    your hands once you call <code>run</code>.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       CUSTOM CONTROL FLOW
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="control-flow">Custom Control-Flow Functions</h2>
+
+  <h3 id="retry">retry(times:) <span class="tier tier-optional">Func works fine (mechanically)</span></h3>
+<pre><code class="language-swift">func retry&lt;T&gt;(times: Int, operation: () throws -> T) rethrows -> T {
+    for attempt in 1..&lt;times {
+        if let result = try? operation() { return result }
+        print("Attempt \(attempt) failed, retrying...")
+    }
+    return try operation()   // final attempt — let it throw if it fails
+}
+
+let value = try retry(times: 3) {
+    try riskyNetworkCall()   // in practice, this closure usually captures local context
+}</code></pre>
+  <div class="verdict">
+    The signature itself doesn't require capturing anything — a func matching
+    <code>() throws -> T</code> plugs in fine. Marked "func works fine" mechanically, but flagged
+    here because real call sites almost always want to close over something local (a URL, a
+    request ID, a token) — the moment they do, this tips straight into "requires a closure" the
+    same way the <code>map</code>/<code>filter</code> examples did.
+  </div>
+
+  <h3 id="measure">measure(_:) — timing helper <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">func measure&lt;T&gt;(_ label: String, _ work: () -> T) -> T {
+    let start = Date()
+    let result = work()
+    let elapsed = Date().timeIntervalSince(start)
+    print("\(label) took \(elapsed)s")
+    return result
+}
+
+let sortedBigArray = measure("sort") {
+    bigArray.sorted()
+}</code></pre>
+  <div class="verdict">
+    <code>work</code> gets sandwiched between two lines of code that <code>measure</code> owns —
+    the start timestamp and the elapsed-time calculation. A func can't be "inserted between two
+    statements belonging to someone else's implementation"; you'd have to copy-paste the timing
+    boilerplate around every single call instead of writing it once, here, and reusing it.
+  </div>
+
+  <h3 id="transaction">Transaction / automatic rollback <span class="tier tier-workaround">Func + workaround</span></h3>
+<pre><code class="language-swift">struct InsufficientFundsError: Error {}
+
+final class Account {
+    private(set) var balance: Int
+    init(balance: Int) { self.balance = balance }
+
+    func transaction(_ changes: (inout Int) throws -> Void) rethrows {
+        var snapshot = balance
+        try changes(&snapshot)
+        balance = snapshot   // only reached if `changes` never threw
+    }
+}
+
+let account = Account(balance: 100)
+try? account.transaction { balance in
+    balance -= 30
+    guard balance >= 0 else { throw InsufficientFundsError() }
+    balance -= 10
+}</code></pre>
+  <div class="verdict">
+    The closure receives a mutable <em>snapshot</em>, not the real balance — if it throws partway
+    through, <code>balance</code> is never reassigned, so the whole transaction rolls back for
+    free. A named <code>func</code> matching <code>(inout Int) throws -> Void</code> would work
+    mechanically the same way (no capture is strictly required), which is why this is tagged
+    "workaround" rather than "required" — but in practice the changes you want to apply almost
+    always come from local variables (a withdrawal amount typed by a user, say), and the instant
+    they do, only a capturing closure will do.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       AUTOCLOSURES
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="autoclosures">Autoclosures</h2>
+
+  <h3 id="require-autoclosure">Custom require(_:_:) <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">func require(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String) {
+    if !condition() {
+        fatalError(message())
+    }
+}
+
+require(user.age >= 18, "User \(user.name) must be an adult")</code></pre>
+  <div class="verdict">
+    <code>message</code> only gets evaluated — meaning the string interpolation only actually runs
+    — if <code>condition()</code> is false. Passing a plain, eager <code>String</code> parameter
+    (the only func-equivalent alternative) would build that string on <em>every</em> call,
+    passing or failing, which defeats the purpose when the message is expensive to construct or
+    has side effects. <code>@autoclosure</code> only exists because closures can defer evaluation;
+    a function's arguments are always evaluated before the call, with no exception.
+  </div>
+
+  <h3 id="first-non-nil">Lazy nil-coalescing helper <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">func firstNonNil&lt;T&gt;(_ a: T?, _ b: @autoclosure () -> T) -> T {
+    return a ?? b()
+}
+
+let name = firstNonNil(cachedName, expensiveNetworkLookup())</code></pre>
+  <div class="verdict">
+    Same idea as Swift's own <code>??</code> operator: <code>expensiveNetworkLookup()</code> is
+    only actually called if <code>cachedName</code> is <code>nil</code>. Without
+    <code>@autoclosure</code>, both arguments would be fully evaluated before
+    <code>firstNonNil</code> even started running — there's no way to write "only run this if
+    needed" using a plain function parameter.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       CLOSURES AS FIRST-CLASS VALUES
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="first-class-values">Closures as First-Class Values</h2>
+
+  <h3 id="strategy-dictionary">Dictionary of interchangeable strategies <span class="tier tier-workaround">Func + workaround</span></h3>
+<pre><code class="language-swift">enum Operation: String { case add, subtract, multiply, divide }
+
+let strategies: [Operation: (Double, Double) -> Double] = [
+    .add: (+),
+    .subtract: (-),
+    .multiply: (*),
+    .divide: { numerator, denominator in
+        guard denominator != 0 else { return .nan }
+        return numerator / denominator
+    }
+]
+
+func calculate(_ a: Double, _ op: Operation, _ b: Double) -> Double {
+    strategies[op]!(a, b)
+}
+
+calculate(10, .divide, 2)   // 5.0</code></pre>
+  <div class="verdict">
+    Notice <code>(+)</code>, <code>(-)</code>, and <code>(*)</code> are operator <em>functions</em>
+    slotted directly into the dictionary — proof that funcs and closures share one type and are
+    freely interchangeable as values. The <code>.divide</code> case needed an actual closure
+    literal only because its logic (the zero-guard) isn't an existing named operator. Tagged
+    "workaround" because you could write a private named func for divide too — the dictionary
+    itself doesn't require closures, just callable values, and named funcs qualify.
+  </div>
+
+  <h3 id="function-composition">Function composition operator <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">infix operator >>>: AdditionPrecedence
+
+func >>> &lt;A, B, C&gt;(_ f: @escaping (A) -> B, _ g: @escaping (B) -> C) -> (A) -> C {
+    return { x in g(f(x)) }
+}
+
+let trim: (String) -> String      = { $0.trimmingCharacters(in: .whitespaces) }
+let lowercase: (String) -> String = { $0.lowercased() }
+let normalize = trim >>> lowercase
+
+normalize("  Hello World  ")   // "hello world"</code></pre>
+  <div class="verdict">
+    <code>>>></code> builds a brand-new function value at runtime by capturing <code>f</code> and
+    <code>g</code> inside a fresh closure — something only possible because closures can be
+    manufactured programmatically, inside another function's body, out of other function values.
+    <code>trim</code> and <code>lowercase</code> could individually be named funcs, but "glue two
+    funcs into a third, new one, on the fly" has no func-only equivalent — the glue itself has to
+    be a closure, because it needs to hold onto <code>f</code> and <code>g</code> as captured
+    state.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       CONCURRENCY
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="concurrency">Concurrency</h2>
+
+  <h3 id="task-capture">Task { } — capturing into a concurrent context <span class="tier tier-required">Requires a closure</span></h3>
+<pre><code class="language-swift">func loadDashboard() {
+    let userID = currentUser.id
+
+    Task {
+        let profile = try? await api.fetchProfile(userID)
+        await MainActor.run {
+            self.profileLabel.text = profile?.name
+        }
+    }
+}</code></pre>
+  <div class="verdict">
+    <code>Task { }</code> takes an async closure that captures <code>userID</code> and
+    <code>self</code> from the synchronous scope around it, then runs concurrently, possibly on a
+    different thread. A synchronous <code>func</code> has no equivalent concept — you cannot
+    "schedule code to run concurrently, later, with today's local values baked in" without
+    packaging that code and its captured context together, which is exactly what a closure is.
+  </div>
+
+  <h3 id="sendable-sending">Sendable, sending, and weak let <span class="tier tier-required">Requires a closure</span> <span class="badge badge-ga">Swift 6.3–6.4, 2026</span></h3>
+  <p>
+    Swift's strict concurrency checking added a vocabulary that applies specifically to closures
+    (and the values they capture), because a closure is a bundle of code <em>plus</em> mutable
+    captured state — and the compiler needs to know whether that whole bundle is safe to move
+    across threads or actors. Plain data has no equivalent problem to solve.
+  </p>
+
+  <div class="code-label">Before Swift 6.3 — a weak var property forces @unchecked Sendable</div>
+<pre><code class="language-swift">final class Session: @unchecked Sendable {
+    weak var delegate: SessionDelegate?
+    // `@unchecked` was required because a mutable `weak var` can't be proven
+    // safe by the compiler's own Sendable checking.
+}</code></pre>
+
+  <div class="code-label">Swift 6.3+ — weak let is immutable, so real Sendable checking applies</div>
+<pre><code class="language-swift">final class Session: Sendable {
+    weak let delegate: SessionDelegate?
+    // Immutable, so the compiler can now verify Sendable safety
+    // without the `@unchecked` escape hatch.
+}</code></pre>
+
+  <div class="code-label">sending — transferring ownership of a non-Sendable capture into a closure</div>
+<pre><code class="language-swift">actor Downloader {
+    func process(_ handler: sending @escaping (Data) -> Void) {
+        // The caller gives up its own references to whatever `handler`
+        // captured, so this actor can safely take ownership of it.
+    }
+}</code></pre>
+
+  <div class="verdict">
+    <code>@Sendable</code>, <code>sending</code>, and the new <code>weak let</code> /
+    <code>~Sendable</code> refinements exist only in relation to closures and the reference types
+    they capture — there's no "Sendable function" problem distinct from "Sendable closure," because
+    a captureless top-level func referenced by name has nothing for these checks to verify. This
+    entire category of compiler vocabulary is proof, at the type-system level, that a closure is
+    fundamentally code bundled with state — and crossing concurrency domains means reasoning about
+    both halves of that bundle at once.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       THE HONEST EXCEPTION: RECURSIVE CLOSURES
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="recursive">Recursive Closures — Where a Func Is Actually Simpler</h2>
+
+  <div class="section-intro">
+    Every example so far has shown closures doing something a plain <code>func</code> can't, or
+    can only awkwardly replicate. Recursion flips that: it's a case where a closure needs a
+    workaround, and a named <code>func</code> gets the feature for free — purely because a
+    <code>func</code> has a name it can refer to inside its own body, and a closure literal, by
+    design, does not.
+  </div>
+
+<pre><code class="language-swift">// A func recurses trivially, by name:
+func factorial(_ n: Int) -> Int {
+    n &lt;= 1 ? 1 : n * factorial(n - 1)
+}
+factorial(5)   // 120</code></pre>
+
+  <h3 id="recursive-wrapper">Recursive closure via a wrapper type <span class="tier tier-workaround">Func + workaround (here, func is simpler)</span></h3>
+<pre><code class="language-swift">struct Recursive&lt;T&gt; { let call: (Recursive&lt;T&gt;, Int) -> T }
+
+let factorialClosure = Recursive&lt;Int&gt; { fact, n in
+    n &lt;= 1 ? 1 : n * fact.call(fact, n - 1)
+}
+
+factorialClosure.call(factorialClosure, 5)   // 120</code></pre>
+  <div class="verdict">
+    The closure has to be handed a reference to <em>itself</em> as a parameter on every call,
+    because it has no name it could use to call itself directly from inside its own body — that's
+    the entire reason the <code>Recursive</code> wrapper exists. This is the one spot in this whole
+    doc where the plain <code>func factorial</code> above is unambiguously less code and less
+    ceremony than any closure-based version.
+  </div>
+
+  <h3 id="recursive-var">Recursive closure via a self-referencing var <span class="tier tier-workaround">Func + workaround</span></h3>
+<pre><code class="language-swift">var factorialVar: ((Int) -> Int)!
+factorialVar = { n in
+    n &lt;= 1 ? 1 : n * factorialVar(n - 1)
+}
+
+factorialVar(5)   // 120</code></pre>
+  <div class="verdict">
+    This works because <code>factorialVar</code> captures <em>itself</em> by reference — but only
+    because it was declared as an implicitly-unwrapped optional <code>var</code> <em>first</em>,
+    in a separate statement, before being assigned. A <code>func</code> gets to refer to its own
+    name the moment it's declared, in one step; a closure has to manufacture a name for itself in
+    two steps first. Neither closure-based approach here is an improvement on the plain
+    <code>func</code> — they're included specifically to keep this doc's claims honest instead of
+    overselling closures as strictly superior in every case.
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       CHEAT SHEET
+  ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="cheatsheet">Cheat Sheet: Every Example at a Glance</h2>
+
+  <table class="ref-table">
+    <thead><tr><th>Example</th><th>Verdict</th><th>Why, in one line</th></tr></thead>
+    <tbody>
+      <tr><td>map — basic transform</td><td><span class="tier tier-optional">optional</span></td><td>No capture; a named func slots in identically</td></tr>
+      <tr><td>map — capturing a rate</td><td><span class="tier tier-required">required</span></td><td>Reads a local <code>let</code> the func couldn't see</td></tr>
+      <tr><td>filter — capturing a threshold</td><td><span class="tier tier-required">required</span></td><td>Same — captures a local value</td></tr>
+      <tr><td>reduce(into:) — word frequency</td><td><span class="tier tier-optional">optional</span></td><td>Pure function of its two parameters, nothing captured</td></tr>
+      <tr><td>sorted — multi-key comparator</td><td><span class="tier tier-optional">optional</span></td><td>Self-contained logic, no capture</td></tr>
+      <tr><td>forEach — mutating an outer var</td><td><span class="tier tier-required">required</span></td><td>Mutates a local <code>var</code> by reference</td></tr>
+      <tr><td>Escaping completion + capture</td><td><span class="tier tier-required">required</span></td><td>Captures state, runs after the function returns</td></tr>
+      <tr><td>Bridging to async/await</td><td><span class="tier tier-required">required</span></td><td>Captures a continuation object at the call site</td></tr>
+      <tr><td>onTap-style property</td><td><span class="tier tier-required">required</span></td><td>Captures a local var the class itself can't see</td></tr>
+      <tr><td>lazy var + closure</td><td><span class="tier tier-workaround">workaround</span></td><td>Func equivalent needs a hand-rolled cache flag</td></tr>
+      <tr><td>ID generator factory</td><td><span class="tier tier-required">required</span></td><td>Returned closure carries its own private counter</td></tr>
+      <tr><td>Memoization cache</td><td><span class="tier tier-required">required</span></td><td>Captured cache dictionary — hidden state, same signature</td></tr>
+      <tr><td>Debouncer</td><td><span class="tier tier-required">required</span></td><td>Captures per-call data; execution timing is out of your hands</td></tr>
+      <tr><td>retry(times:)</td><td><span class="tier tier-optional">optional*</span></td><td>Mechanically func-compatible; real usage usually captures</td></tr>
+      <tr><td>measure(_:)</td><td><span class="tier tier-required">required</span></td><td>Sandwiched between timing code it doesn't own</td></tr>
+      <tr><td>Transaction / rollback</td><td><span class="tier tier-workaround">workaround</span></td><td>Signature-compatible with a func; usually wants capture in practice</td></tr>
+      <tr><td>Custom require(_:_:)</td><td><span class="tier tier-required">required</span></td><td>@autoclosure defers evaluation — funcs always evaluate eagerly</td></tr>
+      <tr><td>Lazy nil-coalescing</td><td><span class="tier tier-required">required</span></td><td>Same — deferred evaluation via @autoclosure</td></tr>
+      <tr><td>Dictionary of strategies</td><td><span class="tier tier-workaround">workaround</span></td><td>Operators are funcs; only the custom case needed a closure literal</td></tr>
+      <tr><td>Function composition (&gt;&gt;&gt;)</td><td><span class="tier tier-required">required</span></td><td>Builds a new closure at runtime, capturing two functions</td></tr>
+      <tr><td>Task { } capture</td><td><span class="tier tier-required">required</span></td><td>Captures local state into a concurrently-scheduled block</td></tr>
+      <tr><td>Sendable / sending / weak let</td><td><span class="tier tier-required">required</span></td><td>Vocabulary only meaningful for closures + their captures</td></tr>
+      <tr><td>Recursive — wrapper type</td><td><span class="tier tier-workaround">workaround</span></td><td>Func recurses by name for free; this is the honest exception</td></tr>
+      <tr><td>Recursive — self-referencing var</td><td><span class="tier tier-workaround">workaround</span></td><td>Same — closures have no name to call themselves with</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip">
+    Reading down the "why" column top to bottom is basically this doc's answer to "control, not
+    data" in miniature: nearly every <span class="tier tier-required" style="margin-left:0">required</span>
+    row is about captured state or deferred/controlled timing — never about the values flowing
+    through the closure's own parameter list.
+  </div>
+
+  <div class="footer-note">
+    Closures in Swift · Examples · Companion to
+    <a href="Closures%20in%20Swift%20%E2%80%94%20Living%20Doc.html">Closures in Swift — Living Doc</a>
+    <br>
+    Sources:
+    <a href="https://docs.swift.org/swift-book/documentation/the-swift-programming-language/closures/" target="_blank">Swift.org — Closures</a> ·
+    <a href="https://github.com/swiftlang/swift-evolution/blob/main/proposals/0302-concurrent-value-and-concurrent-closures.md" target="_blank">SE-0302 — Sendable closures</a> ·
+    <a href="https://www.donnywals.com/sending-vs-sendable-in-swift/" target="_blank">Donny Wals — sending vs Sendable</a> ·
+    <a href="https://www.avanderlee.com/swift/sendable-protocol-closures/" target="_blank">avanderlee.com — Sendable &amp; @Sendable closures</a> ·
+    <a href="https://blakecrosley.com/blog/whats-new-swift-2026" target="_blank">Blake Crosley — What's New in Swift (2026, WWDC26)</a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <h2 id="changelog">Changelog</h2>
+
+  <table class="ref-table">
+    <thead><tr><th>Date</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>2026-07-06</td>
+        <td>
+          Initial version — 24 annotated, tiered examples across collection operations, escaping
+          completion handlers, stored closure properties, state-capturing factories/memoization,
+          custom control-flow functions, autoclosures, closures as first-class values, Swift 6
+          concurrency (Sendable/sending/weak let), and an honest look at recursive closures as the
+          one case where a plain func is simpler. Cheat-sheet table summarizing every example's
+          verdict.
+        </td>
+      </tr>
+      <tr>
+        <td>2026-07-06</td>
+        <td>
+          Tightened two verdicts ("map — capturing a rate", "filter — capturing a threshold") that
+          over-generalized "functions don't capture their enclosing scope." Precision: only
+          <em>top-level</em> functions lack an enclosing scope to capture — a nested func
+          (declared inside another function) captures its enclosing scope exactly like a closure
+          literal does, per Swift's own "special case of a closure" framing. The unique thing a
+          closure literal adds is writing that captured logic anonymously and inline.
+        </td>
+      </tr>
+      <tr>
+        <td>2026-07-06</td>
+        <td>
+          Added a "couldn't I just pass it as a parameter?" note to the map-capture example, and a
+          section intro to State Capture, addressing the two situations where capturing genuinely
+          isn't replaceable by a parameter: (1) you don't control the call — map/filter/sorted/
+          completion-handler systems fix their own closure's argument list — and (2) you need state
+          to persist across separate calls, which a parameter can never do on its own.
+        </td>
+      </tr>
+      <tr>
+        <td>2026-07-06</td>
+        <td>
+          Fixed the filter-capture verdict, which said <code>passingScore</code> could be "passed
+          in explicitly" — implying that was a real, available alternative. It isn't:
+          <code>filter</code> fixes its closure's call to exactly one argument, so a two-parameter
+          func can't be handed to it directly, same constraint as the map-capture example already
+          explained. Also clarified that promoting a captured value to global scope is a design
+          regression (no encapsulation, no per-call-site isolation), not simply "more verbose" code.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</main>
+</div>
+
+<script>
+const links = document.querySelectorAll('nav a');
+const targets = Array.from(links)
+  .map(a => document.querySelector(a.getAttribute('href')))
+  .filter(Boolean);
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const link = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+    if (link) link.classList.toggle('active', entry.isIntersecting);
+  });
+}, { rootMargin: '-10% 0px -80% 0px' });
+
+targets.forEach(t => observer.observe(t));
+</script>
+</body>
+</html>
