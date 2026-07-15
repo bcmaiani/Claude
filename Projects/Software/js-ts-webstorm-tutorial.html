@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern JS, TypeScript &amp; WebStorm — Living Tutorial</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #f5f6f8;
+    --text: #1a1d23;
+    --text-dim: #5a6069;
+    --border: #e1e4e8;
+    --accent: #2b6cb0;
+    --accent-soft: #ebf4ff;
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+    --kw: #cba6f7;
+    --str: #a6e3a1;
+    --com: #6c7086;
+    --fn: #89b4fa;
+    --num: #fab387;
+    --type: #f9e2af;
+    --warn-bg: #fff8e6;
+    --warn-border: #e6c200;
+    --tip-bg: #e8f7ee;
+    --tip-border: #2f9e44;
+    --csharp-bg: #eef1ff;
+    --csharp-border: #6675e0;
+  }
+  [data-theme="dark"] {
+    --bg: #14161a;
+    --bg-alt: #1c1f26;
+    --text: #e6e8eb;
+    --text-dim: #9aa1ab;
+    --border: #2a2e37;
+    --accent: #6ea8fe;
+    --accent-soft: #1b2a3d;
+    --warn-bg: #2a2410;
+    --warn-border: #8a7000;
+    --tip-bg: #10241a;
+    --tip-border: #2f9e44;
+    --csharp-bg: #1a1e33;
+    --csharp-border: #5d6ad1;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  nav.toc {
+    width: 270px;
+    flex-shrink: 0;
+    background: var(--bg-alt);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  nav.toc h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin: 18px 0 6px; }
+  nav.toc h2:first-child { margin-top: 0; }
+  nav.toc ul { list-style: none; margin: 0; padding: 0; }
+  nav.toc li { margin: 2px 0; }
+  nav.toc a { display: block; padding: 5px 8px; border-radius: 6px; font-size: 14px; color: var(--text); }
+  nav.toc a:hover { background: var(--accent-soft); text-decoration: none; }
+
+  main { flex: 1; min-width: 0; max-width: 880px; margin: 0 auto; padding: 40px 48px 120px; }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .topbar button {
+    background: var(--bg-alt); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+
+  h1 { font-size: 32px; margin-bottom: 4px; }
+  .subtitle { color: var(--text-dim); margin-top: 0; }
+  .doc-meta { font-size: 13px; color: var(--text-dim); border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 32px; }
+
+  section { margin-bottom: 56px; scroll-margin-top: 20px; }
+  h2 { font-size: 24px; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-top: 48px; }
+  h3 { font-size: 19px; margin-top: 32px; color: var(--text); }
+  h4 { font-size: 16px; margin-top: 24px; }
+  p { margin: 12px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 6px 0; }
+
+  code {
+    font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--bg-alt);
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 16px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13.5px;
+    line-height: 1.55;
+    margin: 14px 0;
+  }
+  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+  .tok-kw { color: var(--kw); font-weight: 600; }
+  .tok-str { color: var(--str); }
+  .tok-com { color: var(--com); font-style: italic; }
+  .tok-fn { color: var(--fn); }
+  .tok-num { color: var(--num); }
+  .tok-type { color: var(--type); }
+
+  .box {
+    border-left: 4px solid var(--border);
+    background: var(--bg-alt);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 14.5px;
+  }
+  .box.tip { border-color: var(--tip-border); background: var(--tip-bg); }
+  .box.warn { border-color: var(--warn-border); background: var(--warn-bg); }
+  .box.csharp { border-color: var(--csharp-border); background: var(--csharp-bg); }
+  .box .box-title { font-weight: 700; margin-bottom: 4px; display: block; }
+
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-alt); }
+
+  .kbd {
+    font-family: "SF Mono", Consolas, monospace;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-size: 0.85em;
+  }
+
+  .step { counter-reset: none; margin: 18px 0; padding-left: 0; }
+  .step-item { display: flex; gap: 12px; margin: 10px 0; align-items: flex-start; }
+  .step-num {
+    flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; margin-top: 2px;
+  }
+
+  details.log { border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; margin: 24px 0; background: var(--bg-alt); }
+  details.log summary { cursor: pointer; font-weight: 600; }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .04em; padding: 2px 8px; border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+    margin-left: 8px; vertical-align: middle;
+  }
+
+  hr.sep { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  footer { color: var(--text-dim); font-size: 13px; text-align: center; padding: 40px 0; border-top: 1px solid var(--border); margin-top: 60px; }
+
+  @media (max-width: 900px) {
+    nav.toc { display: none; }
+    main { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc">
+  <strong style="font-size:15px;">📘 JS / TS / WebStorm</strong>
+  <h2>Getting Oriented</h2>
+  <ul>
+    <li><a href="#how-to-use">How to use this doc</a></li>
+    <li><a href="#mindset">Mindset shift from C#/Java</a></li>
+  </ul>
+  <h2>Part 1 · Modern JavaScript</h2>
+  <ul>
+    <li><a href="#js-vars">Variables: let/const</a></li>
+    <li><a href="#js-arrows">Arrow functions &amp; this</a></li>
+    <li><a href="#js-arrows-vs-swift">vs. Swift closures</a></li>
+    <li><a href="#js-destructure">Destructuring, spread, rest</a></li>
+    <li><a href="#js-template">Template literals</a></li>
+    <li><a href="#js-optional">Optional chaining &amp; nullish coalescing</a></li>
+    <li><a href="#js-classes">Classes &amp; private fields</a></li>
+    <li><a href="#js-array-methods">Array &amp; object methods</a></li>
+    <li><a href="#js-async">Promises &amp; async/await</a></li>
+    <li><a href="#js-modules">ES Modules</a></li>
+    <li><a href="#js-new">Recent additions (2023–2026)</a></li>
+  </ul>
+  <h2>Part 2 · Node.js Basics</h2>
+  <ul>
+    <li><a href="#node-what">What Node actually is</a></li>
+    <li><a href="#node-npm">npm &amp; package.json</a></li>
+    <li><a href="#node-modules-system">CommonJS vs ESM in Node</a></li>
+    <li><a href="#node-run">Running code without a terminal</a></li>
+  </ul>
+  <h2>Part 3 · TypeScript</h2>
+  <ul>
+    <li><a href="#ts-why">Why TypeScript</a></li>
+    <li><a href="#ts-structural">Structural vs nominal typing</a></li>
+    <li><a href="#ts-basics">Basic types &amp; inference</a></li>
+    <li><a href="#ts-interfaces">Interfaces vs type aliases</a></li>
+    <li><a href="#ts-union">Unions, intersections, narrowing</a></li>
+    <li><a href="#ts-generics">Generics</a></li>
+    <li><a href="#ts-enums">Enums (and why to be careful)</a></li>
+    <li><a href="#ts-classes">Classes &amp; access modifiers</a></li>
+    <li><a href="#ts-config">tsconfig.json essentials</a></li>
+    <li><a href="#ts7">TypeScript 7 &amp; the native compiler</a></li>
+  </ul>
+  <h2>Part 4 · WebStorm Workflow (UI only)</h2>
+  <ul>
+    <li><a href="#ws-project">Creating a project</a></li>
+    <li><a href="#ws-node-panel">Node.js &amp; npm tool windows</a></li>
+    <li><a href="#ws-run">Run/Debug configurations</a></li>
+    <li><a href="#ws-ts-service">TypeScript service settings</a></li>
+    <li><a href="#ws-editing">Editing superpowers</a></li>
+    <li><a href="#ws-debug">Debugging JS/TS in the UI</a></li>
+    <li><a href="#ws-git">Git via the UI</a></li>
+    <li><a href="#ws-shortcuts">Shortcuts worth learning</a></li>
+  </ul>
+  <h2>Reference</h2>
+  <ul>
+    <li><a href="#cheatsheet">Cheat sheet</a></li>
+    <li><a href="#next-steps">Next steps</a></li>
+    <li><a href="#changelog">Changelog</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div class="topbar">
+    <div></div>
+    <button id="theme-toggle" onclick="toggleTheme()">🌙 Dark mode</button>
+  </div>
+
+  <h1>Modern JavaScript, TypeScript &amp; WebStorm</h1>
+  <p class="subtitle">A living reference for an experienced C#/Java developer returning to JS after ~10 years, learning TypeScript and WebStorm 2026.1.4 for the first time.</p>
+  <p class="doc-meta">
+    Last updated: July 14, 2026 &nbsp;·&nbsp; Targets: <strong>WebStorm 2026.1.4</strong>, <strong>Node.js 26.x (Current)</strong>, <strong>TypeScript 7.0</strong><br>
+    This is a single self-contained HTML file — edit it directly in WebStorm as you learn, or ask Claude to extend any section.
+  </p>
+
+  <section id="how-to-use">
+    <h2>How to use this doc</h2>
+    <p>This isn't meant to be read start to finish in one sitting. It's structured so you can jump straight to what you need:</p>
+    <ul>
+      <li><strong>Part 1</strong> assumes you know JS syntax already (you do) and just re-anchors you on what changed since ES5/ES6-era JS.</li>
+      <li><strong>Part 2</strong> assumes zero Node knowledge, since you said you've never used it.</li>
+      <li><strong>Part 3</strong> leans heavily on C#/Java comparisons, since that's your strongest reference frame.</li>
+      <li><strong>Part 4</strong> is pure WebStorm UI — no terminal commands, using menus, tool windows, and dialogs.</li>
+    </ul>
+    <p>Boxes you'll see throughout:</p>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>How this concept maps to what you already know.</div>
+    <div class="box tip"><span class="box-title">✅ Tip</span>Practical advice or a shortcut.</div>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span>A common gotcha for people coming from statically-typed, compiled languages.</div>
+  </section>
+
+  <section id="mindset">
+    <h2>The mindset shift, up front</h2>
+    <p>A few things will keep tripping you up if you don't internalize them early:</p>
+    <ol>
+      <li><strong>JavaScript is dynamically typed at runtime, always.</strong> TypeScript's types are erased entirely when your code runs — they exist only to help WebStorm and the compiler catch mistakes <em>before</em> runtime. There is no type information left at 2am when something throws in production.</li>
+      <li><strong>There is no single compiler / build step by default.</strong> Node runs JavaScript directly. TypeScript files (<code>.ts</code>) are transpiled to JavaScript before Node ever sees them — WebStorm and modern tooling mostly hide this from you, but it's happening.</li>
+      <li><strong>The ecosystem is the language.</strong> Unlike the .NET BCL or the Java standard library, most of what you'll use day to day comes from npm packages, not a built-in standard library. <code>package.json</code> is your project file; npm is your package manager (think NuGet/Maven, but more central to daily life).</li>
+      <li><strong>"Interface" doesn't mean what it means in C#/Java.</strong> TypeScript interfaces describe the <em>shape</em> of data, not a contract a class explicitly opts into (though classes can opt in too). More on this in Part 3.</li>
+    </ol>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============ PART 1: MODERN JS ============ -->
+  <h2 style="border:none; margin-top:20px; font-size:28px;">Part 1 — Modern JavaScript <span class="badge">refresher</span></h2>
+  <p>You know JS syntax from ~2016 and earlier. Here's what actually changed since then that matters day to day.</p>
+
+  <section id="js-vars">
+    <h3>Variables: <code>let</code> / <code>const</code>, forget <code>var</code></h3>
+    <p><code>var</code> is function-scoped and hoists in confusing ways. Modern JS uses <code>const</code> by default and <code>let</code> when a variable needs reassignment. Both are block-scoped, like C#/Java locals.</p>
+<pre><code>const MAX_RETRIES = 3;   // cannot be reassigned
+let attempts = 0;        // can be reassigned
+attempts += 1;</code></pre>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span><code>const</code> means the <em>binding</em> can't be reassigned, not that the value is immutable. <code>const arr = [1,2,3]; arr.push(4);</code> is legal — you're mutating the array, not reassigning the variable.</div>
+  </section>
+
+  <section id="js-arrows">
+    <h3>Arrow functions &amp; lexical <code>this</code></h3>
+    <p>An <strong>arrow function</strong> is just a shorter syntax for writing a function, using <code>=&gt;</code> instead of the <code>function</code> keyword. It's one of the most common things you'll see in modern JS, so it's worth being fluent reading it even before the <code>this</code> nuance below.</p>
+<pre><code>// Old-style function expression
+const add = function(a, b) {
+  return a + b;
+};
+
+// Same thing, as an arrow function
+const add2 = (a, b) => {
+  return a + b;
+};
+
+// If the body is a single "return" expression, you can drop the braces and "return"
+const add3 = (a, b) => a + b;
+
+// One parameter doesn't need parentheses (though many teams keep them for consistency)
+const double = x => x * 2;
+
+// No parameters still needs empty parentheses
+const sayHi = () => console.log("hi");</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>An arrow function is JavaScript's version of a C# lambda expression (<code>(a, b) =&gt; a + b</code> — yes, literally the same arrow) or a Java lambda (<code>(a, b) -&gt; a + b</code>). If you've used LINQ with lambdas or Java's <code>Comparator</code>/<code>Runnable</code> with lambdas, this is the exact same idea: a compact, inline way to write a function, often passed as an argument to another function.</div>
+    <div class="box tip"><span class="box-title">✅ Quick definition: callback</span>A <strong>callback</strong> is just a function you pass as an argument to another function, to be called later — either immediately inside that function (like <code>.map()</code> calling it once per array element) or after some delay/event (like a network response or a button click). "Callback" describes the <em>role</em> a function is playing, not a different kind of function — any regular function or arrow function can be used as one.</div>
+    <p>You'll see them constantly as callbacks passed to other functions, like the array methods below:</p>
+<pre><code>const nums = [1, 2, 3];
+const doubled = nums.map(n => n * 2);   // pass an arrow function directly into .map()
+</code></pre>
+    <p>Beyond the shorter syntax, arrow functions also behave differently with respect to <code>this</code> — that's the part below.</p>
+    <p>Arrow functions don't have their own <code>this</code> — they capture it from the enclosing scope. This solves the classic "callback loses <code>this</code>" problem you may remember fighting with <code>.bind()</code> in old JS.</p>
+<pre><code>class Timer {
+  seconds = 0;
+  start() {
+    // arrow function keeps "this" bound to the Timer instance
+    setInterval(() => {
+      this.seconds++;
+    }, 1000);
+  }
+}</code></pre>
+    <p>Use arrow functions for callbacks and short expressions. Regular <code>function</code> declarations are still fine for top-level functions and methods where you want your own <code>this</code>/<code>arguments</code>.</p>
+  </section>
+
+  <section id="js-arrows-vs-swift">
+    <h3>Arrow functions vs. Swift closures</h3>
+    <p>Since you've studied Swift closures carefully, that vocabulary maps onto JS arrow functions almost directly — closer than the C#/Java lambda comparison above. Here's the same terminology, side by side.</p>
+    <table>
+      <tr><th>Swift closure concept</th><th>JS arrow function equivalent</th></tr>
+      <tr><td><code>{ (a: Int, b: Int) -&gt; Int in a + b }</code></td><td><code>(a, b) =&gt; a + b</code> — no type annotations needed in plain JS; in TypeScript, types are usually inferred from context the same way Swift infers them</td></tr>
+      <tr><td><code>$0</code>, <code>$1</code> shorthand argument names</td><td>No equivalent — JS always names its parameters (<code>n =&gt; n * 2</code>, never an unnamed placeholder)</td></tr>
+      <tr><td>Trailing closure syntax (<code>names.sorted { $0 &gt; $1 }</code>)</td><td>No equivalent syntax — the arrow function is always passed as a normal argument inside parentheses: <code>names.sort((a, b) =&gt; b.localeCompare(a))</code></td></tr>
+      <tr><td>Capturing a variable "by reference" from the enclosing scope</td><td>Identical behavior, no special term for it — it's just called a <a href="#js-async">closure</a>, same word, same default semantics</td></tr>
+      <tr><td>Capture list, e.g. <code>{ [y] in print(y) }</code> to snapshot a value at creation time</td><td>No equivalent. JS has no capture-list syntax — if you need a snapshot instead of a live reference, you copy the value into a new variable yourself (see example below)</td></tr>
+      <tr><td><code>[weak self]</code> / <code>[unowned self]</code> to avoid retain cycles</td><td>No equivalent, and not needed — JS has garbage collection, not ARC/reference counting, so there's no retain-cycle concept for closures to manage</td></tr>
+      <tr><td><code>@escaping</code> annotation</td><td>No equivalent. Every JS closure behaves like an escaping Swift closure by default — none of them are restricted to "must run before the outer function returns"</td></tr>
+      <tr><td><code>numbers.map { $0 * 2 }</code></td><td><code>numbers.map(n =&gt; n * 2)</code> — same higher-order function, same idea, JS just always needs the parens and a named parameter</td></tr>
+    </table>
+
+    <p>The "why closures exist" argument from your Swift doc — a function you call gets to decide <em>whether</em>, <em>when</em>, or <em>how many times</em> your code runs, instead of you writing that control flow yourself — carries over to JS completely unchanged. Same idea, same motivation, different syntax:</p>
+<pre><code>function retry(times, operation) {
+  for (let i = 0; i < times; i++) {
+    operation();
+  }
+}
+
+retry(3, () => console.log("attempt"));
+// attempt
+// attempt
+// attempt</code></pre>
+    <p>And the "counter factory" example (a closure capturing private state instead of promoting a variable to global scope) works exactly the same way in JS as it does in Swift:</p>
+<pre><code>function makeCounter() {
+  let current = 0;
+  return () => {
+    current += 1;
+    return current;
+  };
+}
+
+const counter = makeCounter();
+counter(); // 1
+counter(); // 2
+counter(); // 3
+
+const counter2 = makeCounter(); // independent — its own separate "current"
+counter2(); // 1</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 Swift comparison</span>This is line-for-line the same shape as your <code>makeCounter() -&gt; () -&gt; Int</code> example: <code>current</code> is captured by reference, lives as long as the returned closure lives, and each call to <code>makeCounter()</code> creates an independent capture. JS just doesn't need <code>@escaping</code> to allow this — there's no non-escaping default to opt out of.</div>
+
+    <p>The one genuine gap: Swift's capture list lets you snapshot a value at closure-creation time (<code>{ [y] in ... }</code>). JS has no syntax for that — if you want a snapshot instead of a live reference, you make a new variable and let each closure capture its own copy:</p>
+<pre><code>// Live reference (JS default — same as Swift's default)
+let x = 10;
+const printLive = () => console.log(x);
+x = 20;
+printLive(); // 20 — sees the mutation, same as Swift's default capture
+
+// "Snapshot" — capture a separate variable instead
+function snapshot(value) {
+  return () => console.log(value); // "value" is its own binding, frozen at call time
+}
+const printSnapshot = snapshot(x);
+x = 30;
+printSnapshot(); // still 20 — the parameter copy never changed</code></pre>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span>This is the JS equivalent of the classic "loop variable captured by every closure" bug. Fortunately, <code>let</code>/<code>const</code> in a <code>for</code> loop already create a fresh binding per iteration in modern JS (unlike old <code>var</code>), so the naive version usually does what you'd want without extra work — but it's worth knowing why, given how much attention your Swift doc paid to capture semantics.</div>
+  </section>
+
+  <section id="js-destructure">
+    <h3>Destructuring, spread, and rest</h3>
+    <p>These are three separate features that happen to share similar-looking <code>{ }</code>, <code>[ ]</code>, and <code>...</code> syntax, which is why they're easy to blur together. Taken one at a time, each is simple:</p>
+    <ul>
+      <li><strong>Destructuring</strong> — pulling values <em>out</em> of an object or array into their own named variables, in one line instead of one line per field.</li>
+      <li><strong>Spread (<code>...</code>)</strong> — taking an existing object or array and expanding its contents <em>into</em> a new object, array, or argument list.</li>
+      <li><strong>Rest (<code>...</code>)</strong> — the reverse of spread: gathering up several individual values <em>into</em> a single array or object.</li>
+    </ul>
+    <p>Spread and rest reuse the same <code>...</code> symbol because they're mirror images of each other — one expands, one collects. Which one you're looking at depends on where the <code>...</code> appears.</p>
+
+    <h4>Destructuring objects</h4>
+    <p>Without destructuring, pulling fields off an object means one assignment per field:</p>
+<pre><code>const person = { name: "Ada", age: 34 };
+
+// The long way — one line per field
+const name = person.name;
+const age = person.age;</code></pre>
+    <p>Destructuring does the same thing in one line. The <code>{ name, age }</code> on the left is a pattern that says "look inside whatever's on the right, and create variables matching these property names":</p>
+<pre><code>const { name, age } = person;
+// name is now "Ada", age is now 34 — identical result to the two lines above</code></pre>
+    <p>You can rename while destructuring, and give a default if the property might be missing:</p>
+<pre><code>const { name: fullName, nickname = "N/A" } = person;
+// fullName = "Ada" (renamed from "name")
+// nickname = "N/A" (person has no "nickname" property, so the default was used)</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>This is closest to C#'s pattern matching / deconstruction (<code>var (name, age) = person;</code> on a record with a <code>Deconstruct</code> method), except JS destructuring works on plain objects directly, with no <code>Deconstruct</code> method or matching constructor required.</div>
+
+    <h4>Destructuring arrays</h4>
+    <p>Same idea, but position-based instead of name-based, using <code>[ ]</code> instead of <code>{ }</code>:</p>
+<pre><code>const scores = [95, 82, 71];
+
+// The long way
+const first = scores[0];
+const second = scores[1];
+
+// Destructured — identical result
+const [first2, second2] = scores;
+// first2 = 95, second2 = 82 (71 is simply not captured by anything)</code></pre>
+    <p>A common real-world use: a function that returns two values as a small array, immediately unpacked into two named variables:</p>
+<pre><code>function minMax(nums) {
+  return [Math.min(...nums), Math.max(...nums)];
+}
+const [lowest, highest] = minMax([4, 1, 9, 3]);
+// lowest = 1, highest = 9</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>This covers the same use case as C# tuple deconstruction: <code>var (lowest, highest) = MinMax(nums);</code>. JS has no built-in tuple type — it's just destructuring an ordinary two-element array.</div>
+
+    <h4>Spread — expanding a collection out</h4>
+    <p><strong>Spread</strong> takes an existing array or object and unpacks ("spreads") its contents into a new one. The clearest way to see it is combining two arrays without spread first, then with it:</p>
+<pre><code>const arrA = [1, 2];
+const arrB = [3, 4];
+
+// Without spread — arrA and arrB become nested arrays inside the result, not merged
+const wrong = [arrA, arrB];        // [[1, 2], [3, 4]]  — probably not what you wanted
+
+// With spread — each array's elements are unpacked individually into the new array
+const combined = [...arrA, ...arrB];  // [1, 2, 3, 4]</code></pre>
+    <p>Object spread works the same way, and is commonly used to make a modified copy of an object without mutating the original — useful because, as covered earlier, objects are normally mutated in place:</p>
+<pre><code>const user = { name: "Ada", age: 34 };
+
+// Copy every property from "user" into a new object, then override just "age"
+const updated = { ...user, age: 35 };
+// updated = { name: "Ada", age: 35 } — user itself is untouched</code></pre>
+    <p>Spread also works when calling a function, to unpack an array into separate arguments:</p>
+<pre><code>function add3(a, b, c) { return a + b + c; }
+const nums = [1, 2, 3];
+add3(...nums);   // same as calling add3(1, 2, 3)</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>Object spread (<code>{ ...user, age: 35 }</code>) is roughly C#'s <code>with</code> expression on a record (<code>user with { Age = 35 }</code>) — a shallow, non-destructive copy with specific fields overridden. Array/argument spread is similar to C#'s <code>params</code> array being filled by <code>someArray</code> passed with a spread-like unpack, or Java's varargs.</div>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span>Object/array spread only copies one level deep ("shallow copy"). If a property's value is itself an object or array, both the original and the copy still point at that same nested object — mutating it affects both. Use <code>structuredClone()</code> (from Part 1's array/object methods) when you need a true deep copy.</div>
+
+    <h4>Rest — gathering values into a collection</h4>
+    <p><strong>Rest</strong> is spread's mirror image: instead of unpacking a collection, it gathers multiple individual values <em>into</em> one array. You've actually already seen it, at the end of the array destructuring example — <code>...rest</code> scoops up everything not already captured by name:</p>
+<pre><code>const scores = [95, 82, 71, 60];
+const [first, second, ...rest] = scores;
+// first = 95, second = 82, rest = [71, 60] — "rest" is a real array containing everything left over</code></pre>
+    <p>The other place you'll see it is a function parameter list, where it lets a function accept any number of arguments and receive them as one array — this replaces the old, awkward <code>arguments</code> object from pre-2015 JS:</p>
+<pre><code>function sum(...nums) {
+  // however many arguments are passed, "nums" is a normal array containing all of them
+  return nums.reduce((total, n) => total + n, 0);
+}
+sum(1, 2, 3);        // nums = [1, 2, 3] inside the function → returns 6
+sum(10, 20, 30, 40); // nums = [10, 20, 30, 40] → returns 100</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>Rest parameters (<code>...nums</code>) are directly equivalent to C#'s <code>params int[] nums</code> or Java's varargs <code>int... nums</code> — same purpose, same "collect the remaining arguments into an array" behavior.</div>
+
+    <div class="box tip"><span class="box-title">✅ Telling them apart quickly</span>Same <code>...</code> symbol, two directions: on the <strong>right-hand side of an assignment or inside a function call</strong>, <code>...</code> is spread (expanding a collection outward). On the <strong>left-hand side of an assignment or inside a function's parameter list</strong>, <code>...</code> is rest (gathering values inward). Destructuring is the separate, non-<code>...</code> feature of the <code>{ }</code>/<code>[ ]</code> pattern on the left-hand side pulling named or positional values out.</div>
+  </section>
+
+  <section id="js-template">
+    <h3>Template literals</h3>
+<pre><code>const greeting = `Hello, ${name}! You are ${age} years old.`;
+
+// Multi-line strings, no concatenation needed
+const html = `
+  &lt;div&gt;
+    &lt;p&gt;${greeting}&lt;/p&gt;
+  &lt;/div&gt;
+`;</code></pre>
+    <p>Equivalent to C#'s interpolated strings (<code>$"Hello, {name}"</code>).</p>
+  </section>
+
+  <section id="js-optional">
+    <h3>Optional chaining <code>?.</code> and nullish coalescing <code>??</code></h3>
+<pre><code>const city = user?.address?.city;         // undefined if user or address is null/undefined
+const timeout = config.timeout ?? 5000;    // 5000 only if timeout is null or undefined
+user?.notify?.();                          // safely call a method that might not exist</code></pre>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span><code>??</code> is not the same as <code>||</code>. <code>0 || 5000</code> gives <code>5000</code> (because <code>0</code> is falsy). <code>0 ?? 5000</code> gives <code>0</code> (because <code>0</code> is not null/undefined). Prefer <code>??</code> for defaults where <code>0</code> or <code>""</code> are valid values.</div>
+  </section>
+
+  <section id="js-classes">
+    <h3>Classes, private fields, getters/setters</h3>
+    <p>Real <code>class</code> syntax has existed since ES2015, but true private fields (<code>#field</code>) are newer and give you actual encapsulation, not just a naming convention.</p>
+<pre><code>class BankAccount {
+  #balance = 0;                 // truly private — inaccessible outside the class
+
+  constructor(owner) {
+    this.owner = owner;
+  }
+
+  get balance() {
+    return this.#balance;
+  }
+
+  deposit(amount) {
+    if (amount <= 0) throw new Error("Amount must be positive");
+    this.#balance += amount;
+  }
+
+  static openWith(owner, initial) {
+    const acct = new BankAccount(owner);
+    acct.deposit(initial);
+    return acct;
+  }
+}</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span><code>#field</code> is closer to true <code>private</code> than JS's old convention of prefixing with <code>_name</code> (which was always just public with a polite request not to touch it). <code>static</code> works the same way you'd expect.</div>
+  </section>
+
+  <section id="js-array-methods">
+    <h3>Array &amp; object methods you'll use constantly</h3>
+<pre><code>const nums = [1, 2, 3, 4, 5];
+
+nums.map(n => n * 2);              // [2,4,6,8,10]
+nums.filter(n => n % 2 === 0);     // [2,4]
+nums.reduce((acc, n) => acc + n, 0); // 15
+nums.find(n => n > 3);             // 4
+nums.some(n => n > 4);             // true
+nums.every(n => n > 0);            // true
+nums.includes(3);                  // true
+nums.at(-1);                       // 5 — negative indexing, finally
+
+Object.entries({a: 1, b: 2});      // [["a",1],["b",2]]
+Object.keys(obj); Object.values(obj);
+Object.fromEntries([["a",1]]);     // {a: 1}
+
+structuredClone(obj);              // real deep clone, built in (no more JSON.parse(JSON.stringify(...)) hacks)</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span><code>map</code>/<code>filter</code>/<code>reduce</code> are LINQ's <code>Select</code>/<code>Where</code>/<code>Aggregate</code> (or Java Streams' <code>map</code>/<code>filter</code>/<code>reduce</code>), except they run eagerly on arrays rather than lazily on an enumerable/stream.</div>
+  </section>
+
+  <section id="js-async">
+    <h3>Promises &amp; <code>async</code>/<code>await</code></h3>
+    <p>This is the single biggest change from 10-years-ago JS. Callback-hell code is gone; async code now reads top-to-bottom.</p>
+<pre><code>async function getUser(id) {
+  const response = await fetch(`/api/users/${id}`);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+// Calling it
+try {
+  const user = await getUser(42);
+  console.log(user.name);
+} catch (err) {
+  console.error("Failed to load user:", err);
+}
+
+// Running things concurrently
+const [users, posts] = await Promise.all([getUsers(), getPosts()]);</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span><code>async</code>/<code>await</code> is directly analogous to C#'s <code>async</code>/<code>await</code> over <code>Task&lt;T&gt;</code> — same mental model, JS Promises ≈ .NET Tasks. Java devs: think <code>CompletableFuture</code>, but with much friendlier syntax.</div>
+    <div class="box tip"><span class="box-title">✅ Tip</span>Top-level <code>await</code> now works directly in ES modules — you no longer need to wrap your entry point in an async IIFE just to use <code>await</code> at the top of a file.</div>
+  </section>
+
+  <section id="js-modules">
+    <h3>ES Modules (<code>import</code>/<code>export</code>)</h3>
+<pre><code>// math.js
+export function add(a, b) { return a + b; }
+export const PI = 3.14159;
+export default class Calculator { /* ... */ }
+
+// app.js
+import Calculator, { add, PI } from "./math.js";</code></pre>
+    <p>This replaces the old CommonJS <code>require()</code>/<code>module.exports</code> style you may remember from early Node. You'll meet both — see <a href="#node-modules-system">CommonJS vs ESM in Node</a> in Part 2.</p>
+  </section>
+
+  <section id="js-new">
+    <h3>Other recent additions worth knowing (2023–2026)</h3>
+    <table>
+      <tr><th>Feature</th><th>What it does</th></tr>
+      <tr><td><code>Array.prototype.toSorted() / toReversed() / with()</code></td><td>Non-mutating versions of <code>sort</code>/<code>reverse</code>/index-assignment — return a new array instead of mutating in place.</td></tr>
+      <tr><td><code>Object.groupBy(items, fn)</code></td><td>Groups an array into an object keyed by the callback's return value — no more hand-rolled <code>reduce</code> for grouping.</td></tr>
+      <tr><td><code>Array.fromAsync()</code></td><td>Builds an array from an async iterable.</td></tr>
+      <tr><td><code>Promise.withResolvers()</code></td><td>Cleaner way to create a Promise and grab its <code>resolve</code>/<code>reject</code> without a constructor callback.</td></tr>
+      <tr><td>RegExp <code>v</code> flag &amp; set notation</td><td>More powerful, composable regular expressions.</td></tr>
+    </table>
+    <div class="box tip"><span class="box-title">✅ Tip</span>You don't need to memorize this table. WebStorm's autocomplete will surface these as you type — just know they exist so you recognize them in other people's code.</div>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============ PART 2: NODE ============ -->
+  <h2 style="border:none; font-size:28px;">Part 2 — Node.js Basics <span class="badge">new territory</span></h2>
+  <p>You said you've never used Node — this part assumes nothing.</p>
+
+  <section id="node-what">
+    <h3>What Node actually is</h3>
+    <p>Node.js is a runtime that lets JavaScript run outside a browser — on your machine, on a server, anywhere. It's built on Chrome's V8 engine plus a set of built-in APIs for things browsers don't need (file system access, networking, OS info, etc.).</p>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>Node is to JavaScript roughly what the CLR is to C#, or the JVM is to Java: a runtime + standard library that executes your code and gives you OS-level capabilities. <code>npm</code>-installed packages sit in the role NuGet packages or Maven/Gradle dependencies play.</div>
+    <p>You already installed it via WebStorm, so you're set up. WebStorm will detect your Node installation automatically (Part 4 covers the exact UI).</p>
+  </section>
+
+  <section id="node-npm">
+    <h3>npm &amp; <code>package.json</code></h3>
+    <p><code>npm</code> (Node Package Manager) ships with Node. Every project has a <code>package.json</code> — its project manifest: name, version, dependencies, and scripts.</p>
+<pre><code>{
+  "name": "my-app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "express": "^5.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}</code></pre>
+    <ul>
+      <li><strong>dependencies</strong> — packages your app needs at runtime.</li>
+      <li><strong>devDependencies</strong> — tools needed only while developing (TypeScript, test runners, linters).</li>
+      <li><strong><code>node_modules/</code></strong> — where installed packages actually live. It's generated, huge, and always <code>.gitignore</code>'d — never hand-edit it.</li>
+      <li><strong><code>package-lock.json</code></strong> — pins exact installed versions for reproducible installs. Commit this to source control.</li>
+    </ul>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span><code>package.json</code> ≈ your <code>.csproj</code> or Maven <code>pom.xml</code>. <code>node_modules</code> ≈ the NuGet packages cache or your Maven local repo, but scoped per-project rather than shared globally by default.</div>
+    <p>You said you want to avoid the command line — good news: WebStorm has a full UI for all of this. See <a href="#ws-node-panel">Node.js &amp; npm tool windows</a> in Part 4.</p>
+  </section>
+
+  <section id="node-modules-system">
+    <h3>CommonJS vs ES Modules in Node</h3>
+    <p>This trips up a lot of returning JS developers, so it's worth being explicit. Node supports two module systems:</p>
+    <table>
+      <tr><th></th><th>CommonJS (old default)</th><th>ES Modules (modern)</th></tr>
+      <tr><td>Syntax</td><td><code>require()</code> / <code>module.exports</code></td><td><code>import</code> / <code>export</code></td></tr>
+      <tr><td>File extension</td><td><code>.cjs</code>, or <code>.js</code> by default</td><td><code>.mjs</code>, or <code>.js</code> if <code>package.json</code> has <code>"type": "module"</code></td></tr>
+      <tr><td>Loading</td><td>Synchronous</td><td>Supports async, top-level <code>await</code></td></tr>
+      <tr><td>Status</td><td>Still everywhere in older packages</td><td>The modern standard — use this for new code</td></tr>
+    </table>
+    <div class="box tip"><span class="box-title">✅ Tip</span>For new projects, set <code>"type": "module"</code> in <code>package.json</code> and use <code>import</code>/<code>export</code> everywhere. WebStorm's "New Project" wizard can set this up for you.</div>
+  </section>
+
+  <section id="node-run">
+    <h3>Running code without touching a terminal</h3>
+    <p>Covered fully in Part 4, but the short version: you'll right-click a file → <strong>Run</strong>, or use a Run/Debug configuration and click the green ▶ button in the toolbar. WebStorm generates and manages these for you; you'll rarely need to type a command.</p>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============ PART 3: TYPESCRIPT ============ -->
+  <h2 style="border:none; font-size:28px;">Part 3 — TypeScript <span class="badge">complete beginner</span></h2>
+
+  <section id="ts-why">
+    <h3>Why TypeScript</h3>
+    <p>TypeScript is JavaScript plus a static type system, developed by Microsoft. It compiles ("transpiles") down to plain JavaScript — browsers and Node never run TypeScript directly. Coming from C#/Java, this will feel like coming home: real types, real autocomplete, real compile-time error catching, refactoring you can trust.</p>
+    <div class="box tip"><span class="box-title">✅ Tip</span>Because types are erased at compile time, TypeScript can't catch everything C#/Java's runtime type system catches (e.g., it can't stop you from casting incorrectly at a JSON boundary). Treat TS types as a very good linter, not a runtime guarantee.</div>
+  </section>
+
+  <section id="ts-structural">
+    <h3>Structural typing — the biggest mental shift</h3>
+    <p>C# and Java use <strong>nominal</strong> typing: a class is only a <code>Shape</code> if it explicitly says <code>implements Shape</code>. TypeScript uses <strong>structural</strong> typing: if it has the right shape, it counts — no explicit declaration needed.</p>
+<pre><code>interface Point {
+  x: number;
+  y: number;
+}
+
+function printPoint(p: Point) {
+  console.log(`(${p.x}, ${p.y})`);
+}
+
+// No "implements Point" anywhere — this just works,
+// because the object has the right shape.
+printPoint({ x: 1, y: 2 });
+
+const p3d = { x: 1, y: 2, z: 3 };
+printPoint(p3d); // also fine — extra properties are OK when passed via a variable</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>This is the single biggest adjustment. There's no equivalent to structural typing in C#/Java's type systems (the closest is duck typing in dynamic languages, but here it's statically checked). Stop looking for "implements" — look at shape instead.</div>
+  </section>
+
+  <section id="ts-basics">
+    <h3>Basic types &amp; inference</h3>
+<pre><code>let age: number = 34;
+let name: string = "Ada";
+let active: boolean = true;
+let tags: string[] = ["a", "b"];
+let coords: [number, number] = [1, 2];    // tuple — fixed length, fixed types per slot
+let anything: unknown = fetchSomething(); // safer than "any" — must narrow before use
+
+// You rarely need to annotate — TypeScript infers from the initializer
+let count = 0;          // inferred as number
+function double(n: number) {
+  return n * 2;          // return type inferred as number
+}</code></pre>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span>Avoid the <code>any</code> type. It silently turns off type checking for that value — you lose everything TypeScript gives you. Use <code>unknown</code> when you genuinely don't know the type yet; it forces you to narrow/check before using it.</div>
+  </section>
+
+  <section id="ts-interfaces">
+    <h3>Interfaces vs type aliases</h3>
+<pre><code>interface User {
+  id: number;
+  name: string;
+  email?: string;        // optional property
+  readonly createdAt: Date;
+}
+
+type UserId = number;                     // alias for a primitive
+type Status = "active" | "inactive";      // alias for a union
+type Coordinates = { x: number; y: number };</code></pre>
+    <p>Both <code>interface</code> and <code>type</code> can describe object shapes. Rules of thumb: use <code>interface</code> for objects/classes that might be extended later (interfaces can be reopened and merged); use <code>type</code> for unions, tuples, and anything that isn't a plain extendable object shape.</p>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>Don't map TS <code>interface</code> onto a C# <code>interface</code> one-to-one — a TS interface can describe plain data with no methods at all, more like a lightweight DTO/record shape than a contract a class must implement.</div>
+  </section>
+
+  <section id="ts-union">
+    <h3>Union types, intersections, and narrowing</h3>
+<pre><code>type Result = { ok: true; data: string } | { ok: false; error: string };
+
+function handle(result: Result) {
+  if (result.ok) {
+    console.log(result.data);   // TS knows this branch has "data"
+  } else {
+    console.log(result.error);  // TS knows this branch has "error"
+  }
+}
+
+type Named = { name: string };
+type Aged = { age: number };
+type Person = Named & Aged;      // intersection — must have both</code></pre>
+    <p>This pattern — a union discriminated by a common literal field (<code>ok</code> above) — is called a <strong>discriminated union</strong> and is one of TypeScript's most useful idioms. It replaces a lot of what you'd do with class hierarchies or <code>switch</code> on an enum in C#/Java.</p>
+  </section>
+
+  <section id="ts-generics">
+    <h3>Generics</h3>
+    <p>Directly analogous to C#/Java generics — same purpose, similar syntax.</p>
+<pre><code>function firstOf&lt;T&gt;(items: T[]): T | undefined {
+  return items[0];
+}
+
+interface Box&lt;T&gt; {
+  value: T;
+}
+
+class Stack&lt;T&gt; {
+  private items: T[] = [];
+  push(item: T) { this.items.push(item); }
+  pop(): T | undefined { return this.items.pop(); }
+}
+
+const numberStack = new Stack&lt;number&gt;();</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>Nearly identical mental model to <code>List&lt;T&gt;</code> / generic classes in C# or Java. The main difference: TS generics are erased at compile time (like Java's erasure, unlike C#'s reified generics) — there's no generic type info at runtime at all.</div>
+  </section>
+
+  <section id="ts-enums">
+    <h3>Enums — and why many teams avoid them</h3>
+<pre><code>enum Direction {
+  Up,
+  Down,
+  Left,
+  Right,
+}
+let d: Direction = Direction.Up;
+
+// Many teams prefer a union of string literals instead:
+type Direction2 = "up" | "down" | "left" | "right";</code></pre>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span>TypeScript's <code>enum</code> generates real runtime JS code (unlike interfaces/types, which vanish entirely at compile time) and has quirky edge cases with numeric enums. The literal-union style above is more idiomatic in modern TS codebases and has zero runtime cost. Know both — you'll see <code>enum</code> in older code.</div>
+  </section>
+
+  <section id="ts-classes">
+    <h3>Classes &amp; access modifiers</h3>
+<pre><code>class Employee {
+  private salary: number;
+  protected department: string;
+  readonly id: number;
+
+  constructor(id: number, department: string, salary: number) {
+    this.id = id;
+    this.department = department;
+    this.salary = salary;
+  }
+
+  // Shorthand: parameter properties do the same thing in one line
+  // constructor(public id: number, protected department: string, private salary: number) {}
+}</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span><code>private</code>/<code>protected</code>/<code>public</code> here are <strong>compile-time only</strong> — they're erased in the emitted JavaScript, so at runtime nothing actually stops access. For true runtime privacy, use JS's native <code>#field</code> syntax from Part 1 instead.</div>
+  </section>
+
+  <section id="ts-config">
+    <h3><code>tsconfig.json</code> essentials</h3>
+    <p>This file configures the TypeScript compiler — think of it like project-level compiler settings in a <code>.csproj</code>. WebStorm can generate one for you via the UI (Part 4).</p>
+<pre><code>{
+  "compilerOptions": {
+    "target": "ES2022",        // JS version to compile down to
+    "module": "ESNext",        // module system to emit
+    "strict": true,             // turn on all strict type-checking — always do this
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"]
+}</code></pre>
+    <div class="box tip"><span class="box-title">✅ Tip</span>Always set <code>"strict": true</code>. It's the difference between TypeScript actually catching bugs and TypeScript being decorative. Everything in this doc assumes strict mode.</div>
+  </section>
+
+  <section id="ts7">
+    <h3>TypeScript 7 &amp; the native compiler</h3>
+    <p>As of July 2026, TypeScript 7.0 is stable. The headline change: the compiler itself was rewritten from TypeScript-on-JavaScript to native Go (project codename "Corsa"), giving 8–12× faster full builds and a much more responsive language server on large codebases. The type-checking rules themselves are unchanged from TS 6 — this is a performance rewrite, not a language redesign.</p>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span>At TS 7.0's launch, a few framework integrations (Vue, Svelte, Astro, MDX) were still waiting on full editor support pending a missing programmatic API, expected in TS 7.1. Not relevant for plain TS/Node work, but worth knowing if you branch into a frontend framework.</div>
+    <p>WebStorm 2026.1 can use this native engine via a package called <code>@typescript/native-preview</code> — see <a href="#ws-ts-service">TypeScript service settings</a> in Part 4 for how to enable it.</p>
+  </section>
+
+  <hr class="sep">
+
+  <!-- ============ PART 4: WEBSTORM ============ -->
+  <h2 style="border:none; font-size:28px;">Part 4 — WebStorm 2026.1.4 Workflow <span class="badge">UI only, no CLI</span></h2>
+  <p>Every step below uses menus, dialogs, and tool windows — no typed commands required, beyond what WebStorm generates for you internally.</p>
+
+  <section id="ws-project">
+    <h3>Creating a project</h3>
+    <div class="step">
+      <div class="step-item"><div class="step-num">1</div><div><strong>File → New → Project…</strong></div></div>
+      <div class="step-item"><div class="step-num">2</div><div>Choose <strong>Node.js</strong> (or <strong>Empty Project</strong> if you want to add TypeScript manually) from the left-hand list of generators.</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>WebStorm shows a Node.js interpreter dropdown — it should auto-detect the Node install from your WebStorm setup. Confirm it's selected.</div></div>
+      <div class="step-item"><div class="step-num">4</div><div>Check the box for a starter template if offered (e.g., "TypeScript"), or leave blank for an empty <code>package.json</code>.</div></div>
+      <div class="step-item"><div class="step-num">5</div><div>Click <strong>Create</strong>. WebStorm opens the project and generates <code>package.json</code> for you.</div></div>
+    </div>
+    <p>To add TypeScript to an existing project without a terminal: right-click the project root in the <strong>Project</strong> tool window → <strong>New → package.json</strong> if missing, then use the npm tool window below to install <code>typescript</code> as a dev dependency via UI.</p>
+  </section>
+
+  <section id="ws-node-panel">
+    <h3>Node.js &amp; npm tool windows (this replaces the terminal)</h3>
+    <p><strong>Installing a package:</strong></p>
+    <div class="step">
+      <div class="step-item"><div class="step-num">1</div><div>Open the <strong>npm</strong> tool window: <strong>View → Tool Windows → npm</strong> (or right-click <code>package.json</code> → <strong>Show npm Scripts</strong>).</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>Alternatively, open <code>package.json</code> directly — WebStorm underlines package names and offers quick-fix intentions (Alt+Enter) like "Install missing dependency."</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>For a guided install: <strong>Tools → Manage Project Dependencies…</strong> (or the "+" button in the npm tool window if present) lets you search npm and add a package with checkboxes for "save as dev dependency," all through dialogs.</div></div>
+    </div>
+    <p><strong>Running an npm script</strong> (e.g., <code>"build": "tsc"</code> from <code>package.json</code>):</p>
+    <div class="step">
+      <div class="step-item"><div class="step-num">1</div><div>Open the <strong>npm</strong> tool window — it lists every script from <code>package.json</code> in a tree.</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>Double-click a script name to run it. Output appears in a Run panel at the bottom, just like a build in Rider/IntelliJ.</div></div>
+    </div>
+    <div class="box tip"><span class="box-title">✅ Tip</span>Right-clicking any script in the npm tool window gives you "Create '<i>script</i>'…" which saves it as a reusable Run/Debug configuration you can launch with one click or a keyboard shortcut later.</div>
+  </section>
+
+  <section id="ws-run">
+    <h3>Run/Debug configurations</h3>
+    <p>This is WebStorm's equivalent of Visual Studio's launch profiles.</p>
+    <div class="step">
+      <div class="step-item"><div class="step-num">1</div><div>Top-right of the window: click the configuration dropdown → <strong>Edit Configurations…</strong></div></div>
+      <div class="step-item"><div class="step-num">2</div><div>Click <strong>+</strong> → choose <strong>Node.js</strong> (to run a <code>.js</code> file), <strong>npm</strong> (to run a script), or <strong>TypeScript</strong> where relevant.</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>Point it at your entry file (e.g., <code>src/index.js</code>) via the file picker, give it a name, click <strong>OK</strong>.</div></div>
+      <div class="step-item"><div class="step-num">4</div><div>Use the green ▶ (Run) or bug icon (Debug) in the toolbar. Same as Rider/IntelliJ.</div></div>
+    </div>
+    <p>Quicker path: right-click any <code>.js</code>/<code>.ts</code> file with a runnable entry point in the editor gutter or Project tree → <strong>Run 'filename'</strong>. WebStorm creates the configuration automatically.</p>
+  </section>
+
+  <section id="ws-ts-service">
+    <h3>TypeScript service settings</h3>
+    <p>WebStorm 2026.1 defaults to a service-powered TypeScript engine using the official TypeScript Language Service, which gives faster navigation and more responsive refactoring than older versions. To check or change which engine/version is active:</p>
+    <div class="step">
+      <div class="step-item"><div class="step-num">1</div><div><strong>Settings/Preferences → Languages &amp; Frameworks → TypeScript</strong> (on macOS: <strong>WebStorm → Settings…</strong>).</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>Confirm the TypeScript version dropdown points at the version installed in your project's <code>node_modules</code> (WebStorm detects this automatically once you've installed <code>typescript</code> as a dev dependency via the npm tool window).</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>To try the new native (Go-based) engine: install <code>@typescript/native-preview</code> as a dev dependency via the npm tool window, then select it from this same dropdown.</div></div>
+    </div>
+    <p>To generate <code>tsconfig.json</code> without hand-writing it: right-click the project root → <strong>New → File</strong>, name it <code>tsconfig.json</code>; WebStorm recognizes the filename and gives you autocomplete + inline documentation for every option as you type.</p>
+  </section>
+
+  <section id="ws-editing">
+    <h3>Editing superpowers worth learning early</h3>
+    <table>
+      <tr><th>Feature</th><th>How to use it</th></tr>
+      <tr><td>Rename refactor</td><td>Click a symbol → <span class="kbd">Shift+F6</span>. Renames every usage project-wide, including in strings/comments if you opt in.</td></tr>
+      <tr><td>Extract variable/function</td><td>Select an expression → <span class="kbd">⌘⌥V</span> (extract variable) / <span class="kbd">⌘⌥M</span> (extract method), or right-click → <strong>Refactor</strong>.</td></tr>
+      <tr><td>Quick-fix / intentions</td><td>Cursor on a squiggly-underlined issue → <span class="kbd">Alt+Enter</span>. Offers auto-import, add missing type, convert function style, etc.</td></tr>
+      <tr><td>Go to declaration</td><td><span class="kbd">⌘</span>+click a symbol, or <span class="kbd">⌘B</span>.</td></tr>
+      <tr><td>Find usages</td><td><span class="kbd">⌥F7</span> — shows every call site project-wide.</td></tr>
+      <tr><td>Type info on hover</td><td>Hover any variable/expression to see its inferred TS type in a tooltip — very handy while learning TS's inference.</td></tr>
+      <tr><td>Auto-import</td><td>Start typing a symbol from another file; WebStorm suggests it and inserts the <code>import</code> line automatically on accept.</td></tr>
+    </table>
+  </section>
+
+  <section id="ws-debug">
+    <h3>Debugging JS/TS in the UI</h3>
+    <div class="step">
+      <div class="step-item"><div class="step-num">1</div><div>Click in the left gutter next to a line number to set a breakpoint (red dot).</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>Click the bug icon (or right-click your file → <strong>Debug 'filename'</strong>).</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>Execution pauses at the breakpoint. Use the <strong>Debug</strong> tool window at the bottom: Variables pane, Watches, and step controls (Step Over / Into / Out) — same layout you'd expect from Visual Studio or IntelliJ's debugger.</div></div>
+      <div class="step-item"><div class="step-num">4</div><div>For TypeScript, WebStorm automatically maps breakpoints between your <code>.ts</code> source and the compiled JS via source maps — you debug the TypeScript directly, not the emitted JS.</div></div>
+    </div>
+  </section>
+
+  <section id="ws-git">
+    <h3>Git via the UI</h3>
+    <p>If your project is under Git, WebStorm's <strong>Commit</strong> tool window (left sidebar) and <strong>Git</strong> menu handle staging, committing, branching, and pushing entirely through dialogs — same as any JetBrains IDE. Nothing JS/TS-specific here beyond what you likely already know from Rider.</p>
+  </section>
+
+  <section id="ws-shortcuts">
+    <h3>A few shortcuts worth memorizing early</h3>
+    <table>
+      <tr><th>Action</th><th>macOS</th></tr>
+      <tr><td>Search everywhere</td><td><span class="kbd">Shift Shift</span></td></tr>
+      <tr><td>Go to file</td><td><span class="kbd">⌘⇧O</span></td></tr>
+      <tr><td>Reformat code</td><td><span class="kbd">⌘⌥L</span></td></tr>
+      <tr><td>Run</td><td><span class="kbd">⌃R</span></td></tr>
+      <tr><td>Debug</td><td><span class="kbd">⌃D</span></td></tr>
+      <tr><td>Show context actions (Alt+Enter equivalent)</td><td><span class="kbd">⌥↩</span></td></tr>
+    </table>
+  </section>
+
+  <hr class="sep">
+
+  <section id="cheatsheet">
+    <h2>Cheat sheet</h2>
+    <table>
+      <tr><th>You want to…</th><th>Do this</th></tr>
+      <tr><td>Add a dependency</td><td>npm tool window → search/add, or Alt+Enter on an unresolved import</td></tr>
+      <tr><td>Run the app</td><td>Green ▶ next to a Run/Debug config, or right-click file → Run</td></tr>
+      <tr><td>Type-check without running</td><td>npm script <code>"build": "tsc --noEmit"</code>, run via npm tool window</td></tr>
+      <tr><td>See a variable's inferred type</td><td>Hover over it</td></tr>
+      <tr><td>Rename something everywhere</td><td>Shift+F6</td></tr>
+      <tr><td>Safely default a possibly-null value</td><td><code>value ?? fallback</code></td></tr>
+      <tr><td>Deep clone an object</td><td><code>structuredClone(obj)</code></td></tr>
+      <tr><td>Describe a data shape</td><td><code>interface</code> or <code>type</code></td></tr>
+    </table>
+  </section>
+
+  <section id="next-steps">
+    <h2>Next steps</h2>
+    <ul>
+      <li>Build one small end-to-end thing: a Node script that reads a JSON file, transforms data with array methods, and writes it back out — touches Parts 1, 2, and 4 at once.</li>
+      <li>Convert that script to TypeScript once it works in plain JS — add an <code>interface</code> for your data shape and turn on <code>strict</code> mode.</li>
+      <li>Explore WebStorm's built-in ESLint/Prettier integration (<strong>Settings → Languages &amp; Frameworks → JavaScript → Code Quality Tools</strong>) once you're comfortable with the basics — it's the equivalent of Roslyn analyzers/StyleCop.</li>
+      <li>When ready to go beyond plain Node scripts, ask for a follow-up section on a framework (Express for APIs, or a frontend framework) — intentionally left out of this doc to keep it focused.</li>
+    </ul>
+  </section>
+
+  <details class="log" id="changelog">
+    <summary>Changelog (this is a living doc — track updates here)</summary>
+    <p style="margin-top:10px;"><strong>2026-07-14</strong> — Initial version created. Covers modern JS (ES2020+), Node basics, TypeScript for C#/Java developers, and WebStorm 2026.1.4 UI workflows. Versions targeted: Node.js 26.x, TypeScript 7.0.2, WebStorm 2026.1.4.</p>
+    <p><strong>2026-07-14</strong> — Expanded "Arrow functions" with a from-scratch explanation of the <code>=&gt;</code> syntax and a C#/Java lambda comparison, before covering the lexical-<code>this</code> behavior.</p>
+    <p><strong>2026-07-14</strong> — Added "Arrow functions vs. Swift closures," cross-referencing the user's existing <em>Closures in Swift — Living Doc</em>: a term-by-term mapping table (capture, capture lists, <code>@escaping</code>, trailing closures, <code>$0</code>) plus JS versions of the counter-factory and capture-snapshot examples from that doc.</p>
+    <p><strong>2026-07-14</strong> — Added a brief "callback" definition box in the Arrow Functions section, where the term first appears.</p>
+    <p><strong>2026-07-14</strong> — Rewrote "Destructuring, spread, and rest" from scratch: each concept now gets its own build-up (before/after comparisons for objects and arrays, a wrong-vs-right spread example, the parameter-list use of rest), plus a quick rule of thumb for telling spread and rest apart by position.</p>
+  </details>
+
+  <footer>
+    Built for BCM · Edit this file directly in WebStorm, or ask Claude to extend a section (e.g., "add a section on Express" or "add exercises to Part 3").
+  </footer>
+</main>
+</div>
+
+<script>
+  function toggleTheme() {
+    const html = document.documentElement;
+    const btn = document.getElementById('theme-toggle');
+    if (html.getAttribute('data-theme') === 'dark') {
+      html.removeAttribute('data-theme');
+      btn.textContent = '🌙 Dark mode';
+      localStorage.setItem('theme', 'light');
+    } else {
+      html.setAttribute('data-theme', 'dark');
+      btn.textContent = '☀️ Light mode';
+      localStorage.setItem('theme', 'dark');
+    }
+  }
+  (function initTheme() {
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('theme-toggle').textContent = '☀️ Light mode';
+      });
+    }
+  })();
+
+  // Lightweight syntax highlighter — keywords, strings, comments, numbers
+  (function highlight() {
+    const KEYWORDS = new Set(['const','let','var','function','return','if','else','for','while','class','extends',
+      'new','this','super','import','export','default','from','async','await','try','catch','throw','typeof',
+      'instanceof','interface','type','enum','implements','private','protected','public','readonly','static',
+      'get','set','void','never','unknown','any','string','number','boolean','null','undefined','true','false',
+      'in','of','switch','case','break','continue','do','yield','as']);
+
+    function esc(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function highlightLine(line) {
+      let out = '';
+      let i = 0;
+      const n = line.length;
+      while (i < n) {
+        const ch = line[i];
+        // line comment
+        if (ch === '/' && line[i+1] === '/') {
+          out += `<span class="tok-com">${esc(line.slice(i))}</span>`;
+          break;
+        }
+        // strings
+        if (ch === '"' || ch === "'" || ch === '`') {
+          let j = i + 1;
+          while (j < n && line[j] !== ch) {
+            if (line[j] === '\\\\') j++;
+            j++;
+          }
+          j = Math.min(j + 1, n);
+          out += `<span class="tok-str">${esc(line.slice(i, j))}</span>`;
+          i = j;
+          continue;
+        }
+        // numbers
+        if (/[0-9]/.test(ch) && /[^a-zA-Z_$]/.test(line[i-1] || ' ')) {
+          let j = i;
+          while (j < n && /[0-9.]/.test(line[j])) j++;
+          out += `<span class="tok-num">${esc(line.slice(i, j))}</span>`;
+          i = j;
+          continue;
+        }
+        // identifiers / keywords
+        if (/[a-zA-Z_$]/.test(ch)) {
+          let j = i;
+          while (j < n && /[a-zA-Z0-9_$]/.test(line[j])) j++;
+          const word = line.slice(i, j);
+          if (KEYWORDS.has(word)) {
+            out += `<span class="tok-kw">${esc(word)}</span>`;
+          } else if (line[j] === '(') {
+            out += `<span class="tok-fn">${esc(word)}</span>`;
+          } else {
+            out += esc(word);
+          }
+          i = j;
+          continue;
+        }
+        out += esc(ch);
+        i++;
+      }
+      return out;
+    }
+
+    document.querySelectorAll('main pre > code').forEach(block => {
+      const raw = block.textContent;
+      const lines = raw.split('\\n');
+      block.innerHTML = lines.map(highlightLine).join('\\n');
+    });
+  })();
+</script>
+</body>
+</html>
