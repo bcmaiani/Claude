@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MusicPracticeTracker → React Native Port — Living Doc</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/swift.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+<script>hljs.highlightAll();</script>
+<style>
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a202c;
+    --text-muted: #718096;
+    --accent: #3182ce;
+    --accent-light: #ebf4ff;
+    --code-bg: #f7f9fc;
+    --nav-width: 260px;
+    --note-bg: #fffbeb;
+    --note-border: #f6ad55;
+    --tip-bg: #f0fff4;
+    --tip-border: #68d391;
+    --warn-bg: #fff5f5;
+    --warn-border: #fc8181;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  #wrapper { display: flex; min-height: 100vh; }
+
+  nav {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: var(--nav-width);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 24px 0;
+    z-index: 100;
+  }
+
+  nav .logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 20px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  nav ul { list-style: none; }
+  nav li { display: flex; flex-direction: column; }
+
+  nav a {
+    display: block;
+    padding: 6px 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    border-left: 3px solid transparent;
+    transition: all .15s;
+  }
+  nav a:hover, nav a.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  nav .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #a0aec0;
+    padding: 16px 20px 4px;
+  }
+
+  main {
+    margin-left: var(--nav-width);
+    max-width: 900px;
+    padding: 48px 56px 80px;
+    width: 100%;
+  }
+
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+  h2 {
+    font-size: 1.5rem; font-weight: 700;
+    margin: 56px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 28px 0 10px; }
+  h4 { font-size: .95rem; font-weight: 600; margin: 20px 0 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+
+  p { margin-bottom: 14px; }
+  ul, ol { margin: 10px 0 14px 24px; }
+  li { margin-bottom: 4px; }
+
+  strong { font-weight: 600; }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  pre {
+    background: var(--code-bg) !important;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    margin: 14px 0 20px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  code:not(pre code) {
+    background: #edf2f7;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+
+  .code-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 20px 0 6px;
+  }
+
+  .step-label {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 20px 0 6px;
+  }
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .step-label .step-text {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .note, .tip, .warn {
+    border-left: 4px solid;
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 16px 0 20px;
+    font-size: 14px;
+  }
+  .note  { background: var(--note-bg); border-color: var(--note-border); }
+  .tip   { background: var(--tip-bg);  border-color: var(--tip-border);  }
+  .warn  { background: var(--warn-bg); border-color: var(--warn-border); }
+
+  .note::before  { content: "📝 Note: ";     font-weight: 600; }
+  .tip::before   { content: "💡 Tip: ";      font-weight: 600; }
+  .warn::before  { content: "⚠️ Watch out: "; font-weight: 600; }
+
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 20px;
+    font-size: 13.5px;
+  }
+  .ref-table th {
+    background: #f7fafc;
+    text-align: left;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+  }
+  .ref-table td {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .ref-table tr:nth-child(even) td { background: #f7fafc; }
+  .yes { color: #276749; font-weight: 600; }
+  .no  { color: #9b2c2c; font-weight: 600; }
+
+  .cover {
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+    padding-bottom: 24px;
+  }
+  .cover .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-top: 6px;
+  }
+  .meta {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-ga   { background: #c6f6d5; color: #276749; }
+  .badge-beta { background: #fefcbf; color: #744210; }
+  .badge-soon { background: #fed7aa; color: #7b341e; }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 14px 0 20px;
+  }
+  .compare-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .compare-col h4 {
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+    margin-bottom: 8px;
+    margin-top: 0;
+  }
+  .compare-col ul {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .section-intro {
+    background: var(--accent-light);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    border: 1px solid #bee3f8;
+  }
+
+  .footer-note {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div id="wrapper">
+
+<nav id="sidebar">
+  <div class="logo">RN Port — Living Doc</div>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#access-setup">Access &amp; Setup</a></li>
+
+    <li><div class="section-label">Decisions</div></li>
+    <li><a href="#tech-mapping">Technology Mapping</a></li>
+    <li><a href="#project-scaffold">Project Scaffold</a></li>
+
+    <li><div class="section-label">Port Walkthrough</div></li>
+    <li><a href="#data-layer">Data Layer</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#navigation-screens">Navigation &amp; Screens</a></li>
+    <li><a href="#tests">Tests</a></li>
+
+    <li><div class="section-label">File Map</div></li>
+    <li><a href="#file-mapping">Swift → RN File Mapping</a></li>
+
+    <li><div class="section-label">Wrap-up</div></li>
+    <li><a href="#verification">Verification Performed</a></li>
+    <li><a href="#limitations">Known Limitations</a></li>
+    <li><a href="#webstorm">Running It in WebStorm</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<div class="cover">
+  <h1>MusicPracticeTracker: SwiftUI → React Native Port</h1>
+  <div class="subtitle">Process log for duplicating the iOS app as a React Native / Expo / TypeScript project</div>
+  <div class="meta">Source: <code>/Users/bradmaiani/Development/XCode/MusicPracticeTracker</code> &nbsp;→&nbsp; Output: <code>/Users/bradmaiani/WebstormProjects/MusicPracticeTracker</code></div>
+  <div class="meta">Written: July 16, 2026</div>
+</div>
+
+<section id="overview">
+<h2>Overview</h2>
+<div class="section-intro">
+"Duplicate the iOS app in React Native" isn't a file copy — Swift/SwiftUI/SwiftData code doesn't run in a JS
+engine, so this was a full re-implementation aimed at functional parity: same two tabs, same session → task →
+recording data model, same timer and analytics behavior, same file-storage approach for recordings. This doc
+records what was ported, what technology stood in for each Swift/Apple API, and what still needs manual
+verification on your machine.
+</div>
+<p>The source app is a single-screen-flow music practice tracker: log practice sessions, break each into tasks,
+time each task with a start/pause timer, attach audio/video recordings to a task, and see 30-day/day-of-week
+trend charts plus a streak counter in a History tab.</p>
+</section>
+
+<section id="access-setup">
+<h2>Access &amp; Setup</h2>
+<p>Two folders needed to be connected before any work could start:</p>
+<table class="ref-table">
+<tr><th>Folder</th><th>Purpose</th><th>Access mode</th></tr>
+<tr><td><code>/Users/bradmaiani/Development/XCode/MusicPracticeTracker</code></td><td>Source iOS project to read</td><td>Read/write (connected via folder picker)</td></tr>
+<tr><td><code>/Users/bradmaiani/WebstormProjects</code></td><td>Destination for the new RN project</td><td>Read/write (connected via folder picker)</td></tr>
+</table>
+<div class="note">The requested path <code>/Users/bradmaiani/Webstorm Projects</code> (with a space) doesn't exist on
+disk — the real folder is <code>/Users/bradmaiani/WebstormProjects</code> (no space). The project was written
+there instead.</div>
+</section>
+
+<section id="tech-mapping">
+<h2>Technology Mapping</h2>
+<p>Every Apple-specific API/framework in the source app needed a React Native/Expo equivalent. These were the
+substitutions made, and why:</p>
+<table class="ref-table">
+<tr><th>Swift / Apple</th><th>React Native / Expo</th><th>Why</th></tr>
+<tr><td>SwiftUI</td><td>React Native components + StyleSheet</td><td>Direct UI-layer equivalent</td></tr>
+<tr><td>SwiftData (<code>@Model</code>, <code>@Query</code>, cascade <code>@Relationship</code>)</td>
+    <td><code>expo-sqlite</code> with hand-written SQL + <code>ON DELETE CASCADE</code> foreign keys</td>
+    <td>No direct RN ORM has SwiftData's ergonomics; raw SQLite with explicit cascade FKs reproduces the same
+    cascade-delete guarantee at the DB layer. A small pub/sub bus (<code>src/db/events.ts</code>) fakes
+    <code>@Query</code>'s live-updating reads, since SQLite has no push notifications.</td></tr>
+<tr><td><code>NavigationStack</code> + <code>TabView</code></td>
+    <td>React Navigation (<code>@react-navigation/native-stack</code> + <code>bottom-tabs</code>)</td>
+    <td>Closest structural match — stacks nested inside tabs, same as the source.</td></tr>
+<tr><td>Swift Charts (<code>BarMark</code>)</td><td><code>react-native-gifted-charts</code></td>
+    <td>SVG-only dependency (via <code>react-native-svg</code>), no native linking/Skia required — keeps the
+    project runnable in Expo Go.</td></tr>
+<tr><td><code>AVAudioRecorder</code></td><td><code>expo-av</code>'s <code>Audio.Recording</code></td>
+    <td>Closest maintained Expo audio-recording API at the time of writing.</td></tr>
+<tr><td><code>UIImagePickerController</code> (camera, video mode)</td>
+    <td><code>expo-image-picker</code>'s <code>launchCameraAsync</code></td>
+    <td>Direct RN equivalent for camera-sourced video capture.</td></tr>
+<tr><td>Application Support directory + <code>isExcludedFromBackup</code></td>
+    <td><code>expo-file-system</code>'s <code>documentDirectory</code></td>
+    <td>Closest app-private, persistent storage location. <strong>No RN equivalent for excluding a directory from
+    device backups</strong> — see Known Limitations.</td></tr>
+<tr><td><code>TimelineView(.periodic(from:by:))</code></td><td><code>useTicker</code> hook (<code>setInterval</code>)</td>
+    <td>Forces a once-per-second re-render for the live timer display.</td></tr>
+<tr><td><code>.confirmationDialog</code></td><td><code>Alert.alert</code> via <code>confirmDelete()</code> helper</td>
+    <td>Native destructive-confirmation equivalent on both platforms.</td></tr>
+<tr><td><code>ContentUnavailableView</code></td><td><code>EmptyState</code> component</td><td>Same empty-state pattern.</td></tr>
+<tr><td>CloudKit (disabled in source — no paid dev account)</td><td>Not implemented</td>
+    <td>Source app is local-only; the port stays local-only too, for parity.</td></tr>
+</table>
+</section>
+
+<section id="project-scaffold">
+<h2>Project Scaffold</h2>
+<p>Rather than running WebStorm's project wizard or <code>create-expo-app</code> interactively (not automatable
+from this environment), the project was hand-authored file by file directly at the target path, using the
+standard Expo + TypeScript layout:</p>
+<div class="code-label">package.json (excerpt)</div>
+<pre><code class="language-json">{
+  "dependencies": {
+    "expo": "~52.0.0",
+    "expo-av": "~15.0.1",
+    "expo-sqlite": "~15.0.3",
+    "expo-file-system": "~18.0.6",
+    "expo-image-picker": "~16.0.3",
+    "@react-navigation/native": "^6.1.18",
+    "@react-navigation/native-stack": "^6.11.0",
+    "@react-navigation/bottom-tabs": "^6.6.1",
+    "react-native-gifted-charts": "^1.4.53"
+  }
+}
+</code></pre>
+<p>Also created: <code>app.json</code> (Expo config with camera/microphone permission strings — the RN
+equivalents of <code>NSMicrophoneUsageDescription</code>/<code>NSCameraUsageDescription</code> in the source
+app's <code>Info.plist</code>), <code>tsconfig.json</code> (strict mode, <code>@/*</code> path alias mirroring
+Xcode's module-relative imports), and <code>babel.config.js</code>.</p>
+</section>
+
+<section id="data-layer">
+<h2>Data Layer: SwiftData → SQLite</h2>
+<p>The source app's three <code>@Model</code> classes (<code>PracticeSession</code>, <code>SessionTask</code>,
+<code>Recording</code>) became three SQLite tables with foreign keys instead of SwiftData relationships:</p>
+<div class="code-label">src/db/database.ts (schema)</div>
+<pre><code class="language-typescript">CREATE TABLE tasks (
+  id TEXT PRIMARY KEY NOT NULL,
+  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  date INTEGER NOT NULL,
+  task_description TEXT NOT NULL DEFAULT '',
+  time_spent REAL NOT NULL DEFAULT 0,
+  timer_started_at INTEGER
+);
+</code></pre>
+<p><code>ON DELETE CASCADE</code> reproduces SwiftData's <code>@Relationship(deleteRule: .cascade)</code> — deleting
+a session automatically deletes its tasks and their recordings' metadata rows. Just like the Swift version, the
+DB layer has no idea Recording rows point at files on disk, so <code>sessionsRepository.deleteSession()</code>
+and <code>tasksRepository.deleteTask()</code> explicitly delete the media files first, mirroring the Swift
+<code>performDelete()</code> methods' file-cleanup comments.</p>
+<p>Since raw SQLite has no live-query push mechanism (unlike <code>@Query</code>), reactivity is faked with a
+tiny pub/sub bus: repositories call <code>notifyChange(table)</code> after every mutation, and hooks like
+<code>useSessions()</code> subscribe and re-fetch.</p>
+<div class="tip">The timer itself ported almost line-for-line: <code>timerStartedAt</code> (epoch ms) +
+accumulated <code>timeSpent</code> (seconds) is the same wall-clock approach as the Swift
+<code>Date</code>/<code>TimeInterval</code> pair, so it survives the JS thread being backgrounded exactly like
+the original survives iOS suspending the app.</div>
+</section>
+
+<section id="services">
+<h2>Services</h2>
+<p><code>src/services/practiceAnalytics.ts</code> is a deliberate line-for-line port of
+<code>PracticeAnalytics.swift</code> — same four pure functions (<code>dailyTotals</code>,
+<code>weekdayAverages</code>, <code>currentStreak</code>, <code>suggestion</code>), same streak logic
+(counts from yesterday if today isn't practiced yet), same "best vs. worst weekday" and "N of last 7 days"
+suggestion heuristics.</p>
+<p><code>src/services/useAudioRecorder.ts</code> ports <code>AudioRecorder.swift</code>'s
+<code>isRecording</code>/<code>elapsed</code>/<code>lastError</code> state shape and
+<code>start()</code>/<code>stop()</code>/<code>cancel()</code> actions as a React hook backed by
+<code>expo-av</code>, polling recording status every 200ms — the same interval the Swift version used for its
+display-timer poll loop.</p>
+</section>
+
+<section id="navigation-screens">
+<h2>Navigation &amp; Screens</h2>
+<p>Structure mirrors the source 1:1 — a bottom-tab root (<code>RootTabNavigator</code>) with a Practice stack
+(<code>SessionList → SessionDetail → TaskDetail</code>) and a History stack, matching
+<code>RootTabView.swift</code>'s <code>TabView</code> + nested <code>NavigationStack</code>s. Each SwiftUI view
+became one screen component; swipe-to-delete uses <code>react-native-gesture-handler</code>'s
+<code>Swipeable</code>, gated behind the same "only confirm if a recording would be destroyed" logic as the
+Swift <code>.swipeActions</code> + <code>.confirmationDialog</code> combination.</p>
+</section>
+
+<section id="tests">
+<h2>Tests</h2>
+<p><code>__tests__/practiceAnalytics.test.ts</code> and <code>__tests__/timer.test.ts</code> port the assertions
+from <code>PracticeAnalyticsTests.swift</code> and the timer/formatting portion of <code>ModelTests.swift</code>
+— same fixed reference instant, same expected day-total/streak values.</p>
+<div class="warn">Not ported: <code>ModelTests.swift</code>'s SwiftData cascade-delete test. It requires
+<code>expo-sqlite</code>'s native binding running on-device/in-simulator, not a plain Node/Jest environment.
+Verify cascade deletes manually (create a session with a recording, delete it, confirm the file and DB rows are
+both gone) or add a Detox/Maestro end-to-end test.</div>
+</section>
+
+<section id="file-mapping">
+<h2>Swift → RN File Mapping</h2>
+<table class="ref-table">
+<tr><th>Swift source</th><th>RN equivalent</th></tr>
+<tr><td>MusicPracticeTrackerApp.swift</td><td>App.tsx</td></tr>
+<tr><td>Models/PracticeSession.swift, SessionTask.swift, Recording.swift</td><td>src/models/types.ts + src/db/database.ts (schema)</td></tr>
+<tr><td>Services/RecordingFileManager.swift</td><td>src/services/recordingFileManager.ts</td></tr>
+<tr><td>Services/AudioRecorder.swift</td><td>src/services/useAudioRecorder.ts</td></tr>
+<tr><td>Services/PracticeAnalytics.swift</td><td>src/services/practiceAnalytics.ts</td></tr>
+<tr><td>Services/TimeInterval+Formatting.swift</td><td>src/services/timer.ts (formatDuration)</td></tr>
+<tr><td>Views/RootTabView.swift</td><td>src/navigation/RootTabNavigator.tsx</td></tr>
+<tr><td>Views/SessionListView.swift</td><td>src/screens/SessionListScreen.tsx</td></tr>
+<tr><td>Views/SessionDetailView.swift</td><td>src/screens/SessionDetailScreen.tsx</td></tr>
+<tr><td>Views/TaskDetailView.swift</td><td>src/screens/TaskDetailScreen.tsx</td></tr>
+<tr><td>Views/RecordingCaptureView.swift</td><td>src/screens/RecordingCaptureModal.tsx</td></tr>
+<tr><td>Views/HistoryView.swift</td><td>src/screens/HistoryScreen.tsx</td></tr>
+<tr><td>MusicPracticeTrackerTests/PracticeAnalyticsTests.swift</td><td>__tests__/practiceAnalytics.test.ts</td></tr>
+<tr><td>MusicPracticeTrackerTests/ModelTests.swift (timer/format assertions)</td><td>__tests__/timer.test.ts</td></tr>
+</table>
+</section>
+
+<section id="verification">
+<h2>Verification Performed</h2>
+<p>No macOS/Xcode toolchain or full Node/Expo install was available in the sandbox this was written in (same
+caveat the original Swift README carries about not having a Mac toolchain), so verification was scoped to what
+could actually run:</p>
+<ul>
+<li><strong>Strict TypeScript check</strong> on the pure logic modules (<code>practiceAnalytics.ts</code>,
+<code>timer.ts</code>, <code>types.ts</code>, <code>events.ts</code>, <code>uuid.ts</code>) — compiled clean
+with <code>strict: true</code>.</li>
+<li><strong>Runtime execution</strong> of the compiled analytics/timer functions against the same fixed inputs
+used in the Swift unit tests — outputs matched exactly (daily totals with gaps filled as 0, streak = 3/2/0 for
+the three streak scenarios, duration formatting for sub-minute/sub-hour/multi-hour durations).</li>
+<li><strong>File-tree check</strong> confirming every planned file exists at the target path.</li>
+</ul>
+<div class="warn">Not verified: full <code>npm install</code> (the RN/Expo dependency tree is large enough that
+it didn't complete within this environment's command time limits) and an actual Metro bundle/simulator run. Do
+<code>npm install</code> on your machine per the Running It in WebStorm section below, then work through
+whatever errors <code>npx expo install --check</code> and the Metro bundler surface — most likely spots are
+native-module version mismatches, same class of issue the source README flagged for the Xcode build.</div>
+</section>
+
+<section id="limitations">
+<h2>Known Limitations</h2>
+<ul>
+<li><strong>No push-based live queries.</strong> The pub/sub-plus-refetch approach in <code>src/db/events.ts</code>
+is fine at this app's scale but isn't a real reactive database layer — consider WatermelonDB or Drizzle's
+<code>useLiveQuery</code> if the dataset grows much larger.</li>
+<li><strong>No backup-exclusion flag on the recordings directory.</strong> <code>expo-file-system</code> has no
+equivalent to <code>URLResourceValues.isExcludedFromBackup</code>; recordings will be included in standard
+device backups unless a small native module is added for this.</li>
+<li><strong>Tab icons are emoji, not SF Symbols.</strong> Swap in <code>@expo/vector-icons</code> for closer
+visual parity if desired.</li>
+<li><strong>No cross-device sync</strong>, matching the source app's CloudKit-disabled state — both are
+local-only for now.</li>
+<li><strong>Not build-verified end-to-end</strong> — see Verification Performed above.</li>
+</ul>
+</section>
+
+<section id="webstorm">
+<h2>Running It in WebStorm</h2>
+<div class="step-label"><span class="step-num">1</span><span class="step-text">Open the project</span></div>
+<p>File → Open → select <code>/Users/bradmaiani/WebstormProjects/MusicPracticeTracker</code>.</p>
+
+<div class="step-label"><span class="step-num">2</span><span class="step-text">Install the React Native Console plugin</span></div>
+<p>Preferences/Settings → Plugins → Marketplace → search "React Native Console" → Install → restart WebStorm.</p>
+
+<div class="step-label"><span class="step-num">3</span><span class="step-text">Install dependencies</span></div>
+<pre><code class="language-bash">npm install</code></pre>
+
+<div class="step-label"><span class="step-num">4</span><span class="step-text">Start Metro</span></div>
+<pre><code class="language-bash">npm start</code></pre>
+<p>The React Native Console tool window attaches to this Metro process and streams <code>console.log</code>
+output plus JS errors/warnings from the running app.</p>
+
+<div class="step-label"><span class="step-num">5</span><span class="step-text">Run on a simulator/device</span></div>
+<pre><code class="language-bash">npm run ios     # macOS + Xcode simulator
+npm run android # Android emulator or device</code></pre>
+<div class="note">Recording features need a physical device (or a simulator with camera passthrough) — same
+constraint the source app's README calls out for its own simulator limitations.</div>
+
+<div class="footer-note">
+Living doc for the MusicPracticeTracker → React Native port. Source project:
+<code>/Users/bradmaiani/Development/XCode/MusicPracticeTracker</code>. Ported project:
+<code>/Users/bradmaiani/WebstormProjects/MusicPracticeTracker</code>. See that project's own
+<code>README.md</code> for setup instructions duplicated in condensed form above.
+</div>
+
+</section>
+
+</main>
+</div>
+</body>
+</html>
