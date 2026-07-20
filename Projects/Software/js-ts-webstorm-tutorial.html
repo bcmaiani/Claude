@@ -230,6 +230,22 @@
     <li><a href="#ws-git">Git via the UI</a></li>
     <li><a href="#ws-shortcuts">Shortcuts worth learning</a></li>
   </ul>
+  <h2>Part 5 · Web Services (Express + TS)</h2>
+  <ul>
+    <li><a href="#svc-intro">Designing vs. consuming</a></li>
+    <li><a href="#svc-setup">Project setup (UI only)</a></li>
+    <li><a href="#svc-structure">Project structure &amp; tsconfig</a></li>
+    <li><a href="#svc-first-route">Your first route</a></li>
+    <li><a href="#svc-run-debug">Run/debug the server</a></li>
+    <li><a href="#svc-rest-design">REST design fundamentals</a></li>
+    <li><a href="#svc-routing">Routing &amp; typed requests</a></li>
+    <li><a href="#svc-middleware">Middleware</a></li>
+    <li><a href="#svc-errors">Error handling (Express 5)</a></li>
+    <li><a href="#svc-validation">Validating input</a></li>
+    <li><a href="#svc-http-client">Testing endpoints: HTTP Client</a></li>
+    <li><a href="#svc-consuming">Consuming a web service</a></li>
+    <li><a href="#svc-consuming-typed">Typing external responses</a></li>
+  </ul>
   <h2>Reference</h2>
   <ul>
     <li><a href="#cheatsheet">Cheat sheet</a></li>
@@ -247,7 +263,7 @@
   <h1>Modern JavaScript, TypeScript &amp; WebStorm</h1>
   <p class="subtitle">A living reference for an experienced C#/Java developer returning to JS after ~10 years, learning TypeScript and WebStorm 2026.1.4 for the first time.</p>
   <p class="doc-meta">
-    Last updated: July 14, 2026 &nbsp;·&nbsp; Targets: <strong>WebStorm 2026.1.4</strong>, <strong>Node.js 26.x (Current)</strong>, <strong>TypeScript 7.0</strong><br>
+    Last updated: July 20, 2026 &nbsp;·&nbsp; Targets: <strong>WebStorm 2026.1.4</strong>, <strong>Node.js 26.x (Current)</strong>, <strong>TypeScript 7.0</strong>, <strong>Express 5</strong><br>
     This is a single self-contained HTML file — edit it directly in WebStorm as you learn, or ask Claude to extend any section.
   </p>
 
@@ -547,11 +563,79 @@ Object.fromEntries([["a",1]]);     // {a: 1}
 
 structuredClone(obj);              // real deep clone, built in (no more JSON.parse(JSON.stringify(...)) hacks)</code></pre>
     <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span><code>map</code>/<code>filter</code>/<code>reduce</code> are LINQ's <code>Select</code>/<code>Where</code>/<code>Aggregate</code> (or Java Streams' <code>map</code>/<code>filter</code>/<code>reduce</code>), except they run eagerly on arrays rather than lazily on an enumerable/stream.</div>
+
+    <h4>The modulo operator: <code>%</code></h4>
+    <p><code>%</code> isn't division — it returns <strong>the remainder left over</strong> after dividing the left number by the right one, and throws away the quotient entirely. <code>7 % 2</code> is <code>1</code>, because 2 goes into 7 three times (6) with 1 left over. It has nothing to do with percentages despite the symbol.</p>
+    <table>
+      <tr><th>Expression</th><th>Divide out</th><th>Remainder (the result)</th></tr>
+      <tr><td><code>4 % 2</code></td><td>2 goes into 4 exactly twice</td><td><code>0</code></td></tr>
+      <tr><td><code>5 % 2</code></td><td>2 goes into 5 twice, 1 left over</td><td><code>1</code></td></tr>
+      <tr><td><code>7 % 3</code></td><td>3 goes into 7 twice, 1 left over</td><td><code>1</code></td></tr>
+      <tr><td><code>9 % 3</code></td><td>3 goes into 9 exactly three times</td><td><code>0</code></td></tr>
+    </table>
+    <p><code>n % 2 === 0</code> is the standard idiom for "<code>n</code> is even." Dividing anything by 2 can only ever leave a remainder of <code>0</code> or <code>1</code> — <code>0</code> means it divided evenly (even), <code>1</code> means it didn't (odd). That's the whole trick behind <code>nums.filter(n => n % 2 === 0)</code>: keep only the numbers where dividing by 2 leaves nothing over.</p>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>Identical operator, identical behavior — C#'s and Java's <code>%</code> (remainder) work exactly the same way. If you've ever written <code>n % 2 == 0</code> for an even check in either language, it's the same idiom here.</div>
+
+    <h4>How <code>reduce</code> actually works, and what <code>acc</code> is</h4>
+    <p><code>reduce</code> is the odd one out in that table — every other method (<code>map</code>, <code>filter</code>, <code>find</code>, <code>some</code>, <code>every</code>) looks at one element at a time, in isolation. <code>reduce</code> instead carries a <strong>running value forward</strong> from one call to the next, collapsing ("reducing") the whole array down to a single result. Its callback takes two parameters, in this order:</p>
+    <ul>
+      <li><strong><code>acc</code></strong> — short for <em>accumulator</em>: the running value so far, carried over from the previous call. It's just a parameter name, not a keyword — it could legally be called <code>total</code> or <code>runningSum</code> instead.</li>
+      <li><strong><code>n</code></strong> — the current array element, same as in <code>map</code>/<code>filter</code>.</li>
+    </ul>
+    <p>Whatever the callback <em>returns</em> becomes the <code>acc</code> handed to the <em>next</em> call. The second argument to <code>reduce</code> itself — the <code>0</code> in <code>nums.reduce((acc, n) => acc + n, 0)</code> — is the starting value of <code>acc</code> before the first element is even processed. Walked through call by call, for <code>[1, 2, 3, 4, 5]</code>:</p>
+    <table>
+      <tr><th>Call</th><th><code>acc</code> going in</th><th><code>n</code></th><th><code>acc + n</code> → becomes next <code>acc</code></th></tr>
+      <tr><td>start</td><td>—</td><td>—</td><td><code>0</code> (the initial value passed in)</td></tr>
+      <tr><td>1</td><td><code>0</code></td><td><code>1</code></td><td><code>1</code></td></tr>
+      <tr><td>2</td><td><code>1</code></td><td><code>2</code></td><td><code>3</code></td></tr>
+      <tr><td>3</td><td><code>3</code></td><td><code>3</code></td><td><code>6</code></td></tr>
+      <tr><td>4</td><td><code>6</code></td><td><code>4</code></td><td><code>10</code></td></tr>
+      <tr><td>5</td><td><code>10</code></td><td><code>5</code></td><td><code>15</code> ← final result</td></tr>
+    </table>
+    <p>After the last call, there are no elements left, so <code>reduce</code> just returns the final <code>acc</code>: <code>15</code>. If you left off the <code>0</code>, <code>reduce</code> would use the array's first element as the starting <code>acc</code> instead and begin the loop from the second element — usually fine for addition, but a common source of bugs for anything else (an empty array with no initial value throws instead of returning a sensible default).</p>
+    <div class="box tip"><span class="box-title">✅ Tip</span><code>acc</code> doesn't have to be a number. It's common to build up an object or array instead — e.g. <code>items.reduce((acc, item) => ({ ...acc, [item.id]: item }), {})</code> turns an array into a lookup object, with <code>acc</code> starting as <code>{}</code> and growing by one key each call.</div>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span><code>acc</code> plays the same role as the "seed"/accumulator parameter in LINQ's <code>Aggregate(seed, (acc, n) => ...)</code> or Java Streams' <code>reduce(identity, accumulator)</code> — same running-value concept, same reason for the name.</div>
+
+    <h4>Why <code>find</code> only returns one value</h4>
+    <p><code>find</code> stops at the <strong>first</strong> element that passes the test and returns just that one value — never a list, and it never looks any further once it's found a match. Walked through <code>nums.find(n => n > 3)</code> on <code>[1, 2, 3, 4, 5]</code>:</p>
+    <table>
+      <tr><th>Element checked</th><th><code>n &gt; 3</code></th><th>What happens</th></tr>
+      <tr><td><code>1</code></td><td>false</td><td>keep going</td></tr>
+      <tr><td><code>2</code></td><td>false</td><td>keep going</td></tr>
+      <tr><td><code>3</code></td><td>false</td><td>keep going</td></tr>
+      <tr><td><code>4</code></td><td>true</td><td><strong>return <code>4</code> immediately — <code>5</code> is never even checked</strong></td></tr>
+    </table>
+    <p>That early stop is the whole point of <code>find</code> — it's for "give me the one thing I'm looking for," not "give me everything that matches." For every match instead of just the first, use <code>filter</code>, which never stops early: <code>nums.filter(n => n > 3)</code> returns <code>[4, 5]</code>.</p>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span><code>find</code> returns <code>undefined</code>, not an error or an empty value, when nothing matches — always safe to check with <code>?.</code> or a plain <code>if</code> before using the result.</div>
   </section>
 
   <section id="js-async">
     <h3>Promises &amp; <code>async</code>/<code>await</code></h3>
-    <p>This is the single biggest change from 10-years-ago JS. Callback-hell code is gone; async code now reads top-to-bottom.</p>
+    <p>This is the single biggest change from 10-years-ago JS. Callback-hell code is gone; async code now reads top-to-bottom. Before the code, here's what those pieces actually mean.</p>
+
+    <h4>What a Promise actually is</h4>
+    <p>A <strong>Promise</strong> is an object that stands in for a value you don't have yet — the eventual result of something that takes time, like a network request or reading a file. It always starts in one of three states, and can only move forward through them once, never backward:</p>
+    <table>
+      <tr><th>State</th><th>Meaning</th></tr>
+      <tr><td><code>pending</code></td><td>The operation hasn't finished yet — no value, no error, just in progress.</td></tr>
+      <tr><td><code>fulfilled</code></td><td>It finished successfully — the Promise now holds a value.</td></tr>
+      <tr><td><code>rejected</code></td><td>It failed — the Promise now holds an error instead of a value.</td></tr>
+    </table>
+    <p>Before <code>async</code>/<code>await</code> existed, code consumed a Promise directly, by attaching callbacks with <code>.then()</code> for success and <code>.catch()</code> for failure:</p>
+<pre><code>fetch(`/api/users/42`)
+  .then(response => response.json())
+  .then(user => console.log(user.name))
+  .catch(err => console.error("Failed:", err));</code></pre>
+    <p>That works, but chaining several dependent steps this way nests one callback inside the next — the "callback hell" mentioned above. <code>async</code>/<code>await</code> doesn't replace Promises; it's syntax sugar <em>over</em> them, letting the exact same underlying mechanism be written so it reads like ordinary, top-to-bottom code.</p>
+
+    <h4>What <code>async</code> and <code>await</code> each do</h4>
+    <ul>
+      <li><strong><code>async</code></strong>, placed before a function, does two things: it allows <code>await</code> to be used inside that function, and it makes the function always return a Promise — even a plain <code>return "hello"</code> comes back to the caller wrapped as a Promise that resolves to <code>"hello"</code>.</li>
+      <li><strong><code>await</code></strong>, placed before a Promise-returning expression, pauses execution of <em>that function only</em> until the Promise settles, then unwraps it: on success, <code>await</code> evaluates directly to the resolved value (no <code>.then()</code> needed); on failure, it throws the rejection as an ordinary exception, catchable with <code>try</code>/<code>catch</code>.</li>
+    </ul>
+    <div class="box tip"><span class="box-title">✅ Key point</span><code>await</code> pauses only the <code>async</code> function it's written in — it does <strong>not</strong> freeze the rest of your program. While one <code>async</code> function is waiting on a network call, the JS runtime is free to run other code (handle a click, serve another request) in the meantime. That's what "non-blocking" means here, even though the code reads like it's blocking.</div>
+
+    <p>With that in mind, here's the same idea as real code — a function that fetches a user, and two ways of calling it:</p>
 <pre><code>async function getUser(id) {
   const response = await fetch(`/api/users/${id}`);
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -920,6 +1004,300 @@ type Direction2 = "up" | "down" | "left" | "right";</code></pre>
 
   <hr class="sep">
 
+  <!-- ============ PART 5: WEB SERVICES ============ -->
+  <h2 style="border:none; font-size:28px;">Part 5 — Designing &amp; Consuming Web Services <span class="badge">Express + TypeScript</span></h2>
+  <p>The follow-up promised at the end of Part 4. Two directions, covered in order: first <strong>designing</strong> a web service (you write the API, others call it), then <strong>consuming</strong> one (someone else wrote it, your code calls it). Same TypeScript fundamentals from Part 3 throughout — this part is about applying them at a network boundary.</p>
+
+  <section id="svc-intro">
+    <h3>Designing vs. consuming — why both matter</h3>
+    <p>They're opposite ends of the same conversation. When you <strong>design</strong> a service, you decide the shape of requests and responses, and TypeScript helps you keep your own implementation honest. When you <strong>consume</strong> one, someone else already decided that shape, and TypeScript can't verify anything about it automatically — a fetched JSON payload is just <code>any</code> until you tell TypeScript otherwise, whether or not what you tell it is actually true. Keeping that distinction in mind is most of what makes API code reliable.</p>
+    <div class="box tip"><span class="box-title">✅ Why Express</span>Express 5 (the current stable major version as of 2026) is used for every design example below — it's still the most widely used Node.js web framework, has first-party TypeScript types via <code>@types/express</code>, and Express 5 specifically fixed a long-standing pain point: unhandled promise rejections in route handlers are now forwarded to your error middleware automatically, instead of crashing the process silently.</div>
+  </section>
+
+  <section id="svc-setup">
+    <h3>Project setup — entirely via WebStorm's UI</h3>
+    <p>Same npm tool window workflow from Part 4, applied to a specific set of packages. No terminal needed at any step.</p>
+    <div class="step">
+      <div class="step-item"><div class="step-num">1</div><div>Create (or reuse) a Node.js project: <strong>File → New → Project… → Node.js</strong>, as in Part 4.</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>Open <strong>View → Tool Windows → npm</strong>, then use <strong>Tools → Manage Project Dependencies…</strong> (or the "+" in the npm tool window) to add a runtime dependency: <strong>express</strong>.</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>Repeat for dev dependencies, checking "save as dev dependency" for each: <strong>typescript</strong>, <strong>@types/express</strong>, <strong>@types/node</strong>, and <strong>tsx</strong>.</div></div>
+      <div class="step-item"><div class="step-num">4</div><div>Open <code>package.json</code> in the editor and add scripts by hand (this is just editing a JSON file — still no command line):
+<pre><code>"scripts": {
+  "dev": "tsx watch src/index.ts",
+  "build": "tsc",
+  "typecheck": "tsc --noEmit",
+  "start": "node dist/index.js"
+}</code></pre>
+      </div></div>
+    </div>
+    <div class="box tip"><span class="box-title">✅ Why tsx instead of ts-node</span><code>tsx</code> has become the standard way to run TypeScript directly in Node during development — zero-config ESM support and much faster startup than <code>ts-node</code>, which has struggled to keep pace with Node's module system changes. It skips type-checking for speed, which is why <code>typecheck</code> is a separate script: run it yourself in WebStorm (or wire it into CI) rather than relying on <code>tsx</code> to catch type errors. (<a href="https://www.pkgpulse.com/guides/tsx-vs-ts-node-vs-bun-running-typescript-directly-2026" target="_blank" rel="noopener">source</a>)</div>
+  </section>
+
+  <section id="svc-structure">
+    <h3>Project structure &amp; tsconfig for a Node service</h3>
+    <p>A small but real layout — enough to separate concerns without over-engineering a tutorial project:</p>
+<pre><code>src/
+  index.ts            // creates the app, starts the server
+  routes/
+    users.ts           // Router for /users
+  middleware/
+    errorHandler.ts    // shared error-handling middleware
+  types/
+    api.ts             // shared request/response interfaces</code></pre>
+    <p>Backend <code>tsconfig.json</code> differs slightly from a frontend one — no DOM types needed, and module resolution should match how Node itself resolves modules:</p>
+<pre><code>{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"]
+}</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>This layout plays the same role as a Web API project's <code>Controllers/</code>, <code>Middleware/</code>, and <code>Models/</code> folders in ASP.NET Core — the names differ, the separation of concerns doesn't.</div>
+  </section>
+
+  <section id="svc-first-route">
+    <h3>Your first route</h3>
+    <p><code>src/index.ts</code> — a minimal, typed Express app:</p>
+<pre><code>import express, { Request, Response } from "express";
+
+const app = express();
+app.use(express.json());   // parses JSON request bodies into req.body
+
+app.get("/health", (req: Request, res: Response) => {
+  res.json({ status: "ok" });
+});
+
+const PORT = process.env.PORT ?? 3000;
+app.listen(PORT, () => {
+  console.log(`Listening on http://localhost:${PORT}`);
+});</code></pre>
+    <p><code>Request</code> and <code>Response</code> come from <code>@types/express</code> — importing them by name is what gives you autocomplete on <code>req</code>/<code>res</code> inside every handler.</p>
+  </section>
+
+  <section id="svc-run-debug">
+    <h3>Running and debugging the server</h3>
+    <div class="step">
+      <div class="step-item"><div class="step-num">1</div><div>Open the <strong>npm</strong> tool window and double-click <strong>dev</strong> to start the server with <code>tsx watch</code> — it restarts automatically on save.</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>Right-click <strong>dev</strong> in the npm tool window → <strong>Create 'dev'…</strong> to save it as a reusable Run/Debug configuration with its own toolbar button and shortcut.</div></div>
+      <div class="step-item"><div class="step-num">3</div><div>Click a line number's left gutter in <code>routes/users.ts</code> to set a breakpoint inside a route handler, then launch the saved configuration with the <strong>bug icon</strong> instead of the green ▶.</div></div>
+      <div class="step-item"><div class="step-num">4</div><div>Trigger the breakpoint by hitting the endpoint — see <a href="#svc-http-client">Testing endpoints</a> below for the GUI way to do that.</div></div>
+    </div>
+  </section>
+
+  <section id="svc-rest-design">
+    <h3>REST design fundamentals</h3>
+    <p>REST isn't a protocol or a library — it's a small set of conventions for mapping operations onto HTTP. Getting the conventions right is most of what makes an API pleasant to consume.</p>
+    <table>
+      <tr><th>Method</th><th>Use it for</th><th>Idempotent?</th><th>Example</th></tr>
+      <tr><td><code>GET</code></td><td>Read a resource or collection</td><td class="yes">Yes</td><td><code>GET /users/42</code></td></tr>
+      <tr><td><code>POST</code></td><td>Create a new resource</td><td class="no">No</td><td><code>POST /users</code></td></tr>
+      <tr><td><code>PUT</code></td><td>Replace a resource entirely</td><td class="yes">Yes</td><td><code>PUT /users/42</code></td></tr>
+      <tr><td><code>PATCH</code></td><td>Partially update a resource</td><td class="no">Usually not</td><td><code>PATCH /users/42</code></td></tr>
+      <tr><td><code>DELETE</code></td><td>Remove a resource</td><td class="yes">Yes</td><td><code>DELETE /users/42</code></td></tr>
+    </table>
+    <p>"Idempotent" means calling it once vs. many times with the same input leaves the resource in the same end state — useful to know because clients (and proxies) are allowed to safely retry idempotent requests after a network failure, but not <code>POST</code>.</p>
+    <p><strong>URL naming:</strong> plural nouns for collections (<code>/users</code>, not <code>/user</code>), nesting for ownership (<code>/users/42/orders</code>), and no verbs in the path (<code>POST /users</code>, not <code>/createUser</code>) — the HTTP method already is the verb.</p>
+    <table>
+      <tr><th>Status code</th><th>Meaning</th></tr>
+      <tr><td><code>200 OK</code></td><td>Success, returning data</td></tr>
+      <tr><td><code>201 Created</code></td><td>Success, a new resource now exists (include its location/body)</td></tr>
+      <tr><td><code>204 No Content</code></td><td>Success, nothing to return (common for <code>DELETE</code>)</td></tr>
+      <tr><td><code>400 Bad Request</code></td><td>The request itself is malformed or fails validation</td></tr>
+      <tr><td><code>401 Unauthorized</code></td><td>Missing or invalid credentials</td></tr>
+      <tr><td><code>403 Forbidden</code></td><td>Authenticated, but not allowed to do this</td></tr>
+      <tr><td><code>404 Not Found</code></td><td>Resource doesn't exist</td></tr>
+      <tr><td><code>409 Conflict</code></td><td>Request conflicts with current state (e.g., duplicate email)</td></tr>
+      <tr><td><code>500 Internal Server Error</code></td><td>Your bug, not the client's — never expose a stack trace here in production</td></tr>
+    </table>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>This is the same design vocabulary ASP.NET Core Web API and Spring MVC controllers use — <code>[HttpGet]</code>/<code>[HttpPost]</code> attributes or <code>@GetMapping</code>/<code>@PostMapping</code> annotations map to the exact same HTTP semantics as Express's <code>router.get()</code>/<code>router.post()</code>.</div>
+  </section>
+
+  <section id="svc-routing">
+    <h3>Routing &amp; typing requests</h3>
+    <p>Group related routes with <code>express.Router()</code> instead of piling everything onto <code>app</code> directly — <code>src/routes/users.ts</code>:</p>
+<pre><code>import { Router, Request, Response } from "express";
+
+interface UserParams {
+  id: string;
+}
+
+interface CreateUserBody {
+  name: string;
+  email: string;
+}
+
+const router = Router();
+
+router.get("/users/:id", (req: Request&lt;UserParams&gt;, res: Response) => {
+  res.json({ id: req.params.id });
+});
+
+router.post(
+  "/users",
+  (req: Request&lt;{}, {}, CreateUserBody&gt;, res: Response) => {
+    const { name, email } = req.body;
+    res.status(201).json({ name, email });
+  }
+);
+
+export default router;</code></pre>
+    <p>Wire it into <code>index.ts</code> with <code>app.use(usersRouter)</code>. The interesting part is <code>Request</code>'s generic parameters: <code>Request&lt;Params, ResBody, ReqBody, ReqQuery&gt;</code> — supplying <code>UserParams</code> as the first type argument means <code>req.params.id</code> is typed as <code>string</code> instead of <code>any</code>; supplying <code>CreateUserBody</code> as the third means <code>req.body.name</code> and <code>req.body.email</code> are typed and autocompleted.</p>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span>Typing <code>req.body</code> this way only tells <em>TypeScript</em> what shape to expect — it does nothing at runtime. A malicious or buggy client can still send a body missing <code>email</code> entirely, and <code>req.body.email</code> will silently be <code>undefined</code> at runtime despite TypeScript insisting it's a <code>string</code>. See <a href="#svc-validation">Validating input</a> below for the fix.</div>
+  </section>
+
+  <section id="svc-middleware">
+    <h3>Middleware</h3>
+    <p>A <strong>middleware</strong> is a function that runs between the request arriving and your route handler responding — <code>express.json()</code> in the first example was already one. Write your own the same shape: <code>(req, res, next)</code>, calling <code>next()</code> to hand off to whatever's next in the chain.</p>
+<pre><code>import { Request, Response, NextFunction } from "express";
+
+function requestLogger(req: Request, res: Response, next: NextFunction) {
+  console.log(`${req.method} ${req.path}`);
+  next();   // without this, the request hangs forever
+}
+
+app.use(requestLogger);   // applies to every route registered after this line</code></pre>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>Directly analogous to ASP.NET Core's middleware pipeline (<code>app.Use(...)</code> in <code>Program.cs</code>) or a Java servlet filter chain — same "each layer can inspect, modify, short-circuit, or pass along" model, same ordering-matters rule.</div>
+  </section>
+
+  <section id="svc-errors">
+    <h3>Error handling — and what Express 5 changed</h3>
+    <p>Error-handling middleware is a normal middleware function with a fourth parameter, <code>err</code> — Express recognizes the four-argument signature and routes errors to it:</p>
+<pre><code>import { Request, Response, NextFunction } from "express";
+
+class AppError extends Error {
+  constructor(public statusCode: number, message: string) {
+    super(message);
+  }
+}
+
+function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({ error: err.message });
+    return;
+  }
+  console.error(err);
+  res.status(500).json({ error: "Internal server error" });
+}
+
+app.use(errorHandler);   // registered last, after all routes</code></pre>
+    <p>Throw an <code>AppError</code> (or any error) from inside a route handler and this catches it — including from an <code>async</code> handler:</p>
+<pre><code>router.get("/users/:id", async (req: Request&lt;UserParams&gt;, res: Response) => {
+  const user = await db.findUser(req.params.id);
+  if (!user) throw new AppError(404, "User not found");
+  res.json(user);
+});</code></pre>
+    <div class="box tip"><span class="box-title">✅ Express 5 change</span>Before Express 5, a rejected promise inside an <code>async</code> route handler was <strong>silently swallowed</strong> — it never reached <code>errorHandler</code> at all, unless you wrapped every handler in a try/catch or a helper like <code>express-async-handler</code>. Express 5 forwards async rejections to your error middleware automatically, which is why the example above needs no try/catch. If you're reading older Express tutorials online, this is the biggest behavioral difference to watch for. (<a href="https://www.reactsquad.io/blog/how-to-set-up-express-5-in-2025" target="_blank" rel="noopener">source</a>)</div>
+  </section>
+
+  <section id="svc-validation">
+    <h3>Validating input (the fix for the warning above)</h3>
+    <p>TypeScript's types disappear at compile time; validating a request body for real means checking it at runtime. <a href="https://zod.dev" target="_blank" rel="noopener">Zod</a> is the most common lightweight choice — add it the same way as any other package, via the npm tool window.</p>
+<pre><code>import { z } from "zod";
+
+const createUserSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+
+router.post("/users", (req: Request, res: Response) => {
+  const result = createUserSchema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ error: result.error.flatten() });
+    return;
+  }
+  const { name, email } = result.data;   // now genuinely typed AND verified
+  res.status(201).json({ name, email });
+});</code></pre>
+    <p>This section is intentionally brief — validation libraries are their own topic. The point to take away: <code>result.data</code> is trustworthy in a way a bare <code>req.body: CreateUserBody</code> annotation never was.</p>
+  </section>
+
+  <section id="svc-http-client">
+    <h3>Testing endpoints without leaving WebStorm: the HTTP Client</h3>
+    <div class="section-intro" style="background:var(--accent-soft); border-radius:8px; padding:14px 18px; margin-bottom:18px; border:1px solid var(--border);">This is WebStorm's built-in, GUI-native replacement for <code>curl</code> or Postman — requests live in a plain-text <code>.http</code> file inside your project, run with a click, and can be committed to git alongside the code they test.</div>
+    <div class="step">
+      <div class="step-item"><div class="step-num">1</div><div>Right-click the project root → <strong>New → HTTP Request</strong> (or <strong>New → File</strong> named <code>requests/users.http</code>).</div></div>
+      <div class="step-item"><div class="step-num">2</div><div>Write one or more requests, separated by <code>###</code>:
+<pre><code>### Get all users
+GET http://localhost:3000/users
+
+### Create a user
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "name": "Ada Lovelace",
+  "email": "ada@example.com"
+}</code></pre>
+          </div></div>
+      <div class="step-item"><div class="step-num">3</div><div>Click the green ▶ that appears in the gutter next to <code>GET</code>/<code>POST</code> to run that request. The response opens in a split pane — headers, body, and timing all visible, no browser or extra tool involved.</div></div>
+      <div class="step-item"><div class="step-num">4</div><div>Chain requests by capturing a value from one response and reusing it in the next, via a response-handler script:
+<pre><code>### Create a user, save its id
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{ "name": "Ada Lovelace", "email": "ada@example.com" }
+
+&gt; {%
+  client.global.set("userId", response.body.id);
+%}
+
+### Fetch that same user back
+GET http://localhost:3000/users/{{userId}}</code></pre>
+          </div></div>
+      <div class="step-item"><div class="step-num">5</div><div>For per-environment base URLs, add an <code>http-client.env.json</code> file (dev/staging/prod hosts) and, for secrets like tokens, a git-ignored <code>http-client.private.env.json</code> — select the active environment from a dropdown in the editor's top-right corner.</div></div>
+    </div>
+    <div class="box tip"><span class="box-title">✅ Tip</span>Response-handler scripts can also make lightweight assertions, giving you a lint-free way to sanity-check an endpoint without a full test framework: <code>client.test("status is 200", () =&gt; client.assert(response.status === 200));</code> (<a href="https://www.jetbrains.com/help/webstorm/http-client-in-product-code-editor.html" target="_blank" rel="noopener">WebStorm HTTP Client docs</a>)</div>
+  </section>
+
+  <section id="svc-consuming">
+    <h3>Consuming a web service</h3>
+    <p>Now the other direction: calling an API you didn't write. Node's global <code>fetch</code> (no package install needed since Node 18+) plus <code>async</code>/<code>await</code> is the standard approach:</p>
+<pre><code>interface GitHubUser {
+  login: string;
+  public_repos: number;
+}
+
+async function getGitHubUser(username: string): Promise&lt;GitHubUser&gt; {
+  const res = await fetch(`https://api.github.com/users/${username}`);
+  if (!res.ok) {
+    throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
+  }
+  return res.json() as Promise&lt;GitHubUser&gt;;
+}
+
+const user = await getGitHubUser("octocat");
+console.log(user.public_repos);</code></pre>
+    <div class="box tip"><span class="box-title">✅ Tip</span>Before writing the TypeScript interface for a response, use the HTTP Client from the previous section to actually call the real endpoint first and look at what comes back. Designing <code>GitHubUser</code> from the real JSON, instead of guessing from documentation, avoids a whole category of "field doesn't exist" runtime surprises.</div>
+    <div class="box warn"><span class="box-title">⚠️ Watch out</span><code>fetch</code> only rejects on a genuine network failure — a <code>404</code> or <code>500</code> response still resolves successfully. Always check <code>res.ok</code> (or <code>res.status</code>) yourself, as shown above; forgetting this is the single most common <code>fetch</code> bug.</div>
+  </section>
+
+  <section id="svc-consuming-typed">
+    <h3>Typing external responses honestly</h3>
+    <p><code>res.json()</code> returns <code>Promise&lt;any&gt;</code> — the <code>as Promise&lt;GitHubUser&gt;</code> cast above is a promise <em>to</em> TypeScript, not a guarantee. If GitHub changed a field name tomorrow, that cast would compile fine and fail at runtime instead. For responses you actually depend on, validate them the same way as inbound request bodies in <a href="#svc-validation">Validating input</a>:</p>
+<pre><code>import { z } from "zod";
+
+const gitHubUserSchema = z.object({
+  login: z.string(),
+  public_repos: z.number(),
+});
+
+async function getGitHubUser(username: string) {
+  const res = await fetch(`https://api.github.com/users/${username}`);
+  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+  return gitHubUserSchema.parse(await res.json());   // throws if the shape doesn't match
+}</code></pre>
+    <p>The return type of <code>getGitHubUser</code> is now inferred correctly <em>and</em> checked at runtime — if it doesn't throw, the shape is real, not assumed.</p>
+    <div class="box tip"><span class="box-title">✅ Tip</span><code>fetch</code> is used throughout this section because it needs no dependency, but <code>axios</code> remains a common alternative if you want automatic JSON parsing, request/response interceptors, or built-in timeout support — install it the same way as any other package if a project calls for it.</div>
+  </section>
+
+  <hr class="sep">
+
   <section id="cheatsheet">
     <h2>Cheat sheet</h2>
     <table>
@@ -932,6 +1310,10 @@ type Direction2 = "up" | "down" | "left" | "right";</code></pre>
       <tr><td>Safely default a possibly-null value</td><td><code>value ?? fallback</code></td></tr>
       <tr><td>Deep clone an object</td><td><code>structuredClone(obj)</code></td></tr>
       <tr><td>Describe a data shape</td><td><code>interface</code> or <code>type</code></td></tr>
+      <tr><td>Test an API endpoint (no curl/Postman)</td><td>Open a <code>.http</code> file, click the green ▶ in the gutter</td></tr>
+      <tr><td>Run the Express dev server</td><td>npm tool window → double-click <code>dev</code></td></tr>
+      <tr><td>Type request params/body</td><td><code>Request&lt;Params, ResBody, ReqBody, Query&gt;</code> generics from <code>express</code></td></tr>
+      <tr><td>Actually verify a request/response shape at runtime</td><td><code>zod</code> — <code>schema.parse(data)</code> or <code>.safeParse(data)</code></td></tr>
     </table>
   </section>
 
@@ -941,13 +1323,19 @@ type Direction2 = "up" | "down" | "left" | "right";</code></pre>
       <li>Build one small end-to-end thing: a Node script that reads a JSON file, transforms data with array methods, and writes it back out — touches Parts 1, 2, and 4 at once.</li>
       <li>Convert that script to TypeScript once it works in plain JS — add an <code>interface</code> for your data shape and turn on <code>strict</code> mode.</li>
       <li>Explore WebStorm's built-in ESLint/Prettier integration (<strong>Settings → Languages &amp; Frameworks → JavaScript → Code Quality Tools</strong>) once you're comfortable with the basics — it's the equivalent of Roslyn analyzers/StyleCop.</li>
-      <li>When ready to go beyond plain Node scripts, ask for a follow-up section on a framework (Express for APIs, or a frontend framework) — intentionally left out of this doc to keep it focused.</li>
+      <li>Build the small Express API from Part 5 end to end: a couple of routes, a <code>.http</code> file to exercise them, <code>zod</code> validation on the write endpoint, and a client function that consumes your own API back.</li>
+      <li>Add persistence (a real database) to that API — ask for a follow-up section once you've picked one (Postgres via Prisma/Drizzle, SQLite, or MongoDB are the common 2026 defaults).</li>
+      <li>Add authentication (JWT or session-based) to protect the write endpoints — also intentionally left out of Part 5 to keep it focused on REST fundamentals.</li>
+      <li>If you outgrow hand-typed <code>interface</code>s for a real API, look into generating TypeScript types directly from an OpenAPI/Swagger spec (e.g., <code>openapi-typescript</code>) — keeps client types in sync with the server automatically.</li>
     </ul>
   </section>
 
   <details class="log" id="changelog">
     <summary>Changelog (this is a living doc — track updates here)</summary>
-    <p style="margin-top:10px;"><strong>2026-07-14</strong> — Initial version created. Covers modern JS (ES2020+), Node basics, TypeScript for C#/Java developers, and WebStorm 2026.1.4 UI workflows. Versions targeted: Node.js 26.x, TypeScript 7.0.2, WebStorm 2026.1.4.</p>
+    <p style="margin-top:10px;"><strong>2026-07-20</strong> — Rewrote the start of "Promises &amp; async/await" (Part 1) to explain the concept before the code: what a Promise object and its three states (pending/fulfilled/rejected) actually are, the older <code>.then()</code>/<code>.catch()</code> style, and what <code>async</code> and <code>await</code> each individually do — including the non-blocking point (only the <code>async</code> function pauses, not the whole program) — all placed ahead of the existing <code>getUser</code> example.</p>
+    <p style="margin-top:10px;"><strong>2026-07-20</strong> — Expanded "Array &amp; object methods" (Part 1) with a from-scratch breakdown of the <code>%</code> (modulo) operator — what a remainder is, why <code>n % 2 === 0</code> means "even" — a call-by-call walkthrough of <code>reduce</code> explaining <code>acc</code> (the accumulator) and how the initial value flows through each call, and a table showing why <code>find</code> stops and returns only its first match instead of every matching element.</p>
+    <p><strong>2026-07-20</strong> — Added Part 5, "Designing &amp; Consuming Web Services": Express 5 + TypeScript project setup via WebStorm's UI (npm tool window, no terminal), project structure/tsconfig for Node, a first typed route, Run/Debug + breakpoint debugging, REST design fundamentals (methods, status codes, URL naming), typed routing with Express's <code>Request&lt;Params, ResBody, ReqBody, Query&gt;</code> generics, middleware, Express 5's automatic async error forwarding, a brief <code>zod</code> validation intro, testing endpoints with WebStorm's built-in <code>.http</code> HTTP Client (environment files, chained requests, assertions — the GUI alternative to curl/Postman), and consuming an external API with typed <code>fetch</code>. Updated the cheat sheet and next-steps list to match.</p>
+    <p><strong>2026-07-14</strong> — Initial version created. Covers modern JS (ES2020+), Node basics, TypeScript for C#/Java developers, and WebStorm 2026.1.4 UI workflows. Versions targeted: Node.js 26.x, TypeScript 7.0.2, WebStorm 2026.1.4.</p>
     <p><strong>2026-07-14</strong> — Expanded "Arrow functions" with a from-scratch explanation of the <code>=&gt;</code> syntax and a C#/Java lambda comparison, before covering the lexical-<code>this</code> behavior.</p>
     <p><strong>2026-07-14</strong> — Added "Arrow functions vs. Swift closures," cross-referencing the user's existing <em>Closures in Swift — Living Doc</em>: a term-by-term mapping table (capture, capture lists, <code>@escaping</code>, trailing closures, <code>$0</code>) plus JS versions of the counter-factory and capture-snapshot examples from that doc.</p>
     <p><strong>2026-07-14</strong> — Added a brief "callback" definition box in the Arrow Functions section, where the term first appears.</p>
