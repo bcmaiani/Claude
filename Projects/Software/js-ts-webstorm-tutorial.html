@@ -658,6 +658,8 @@ const [users, posts] = await Promise.all([getUsers(), getPosts()]);</code></pre>
 
   <section id="js-modules">
     <h3>ES Modules (<code>import</code>/<code>export</code>)</h3>
+    <p>A <strong>module</strong> is just a file whose top-level variables and functions are private to that file by default — nothing is visible outside it unless explicitly marked with <code>export</code>. <code>import</code> is how another file pulls in exactly the pieces it needs. This is what fixes the old plain-<code>&lt;script&gt;</code> problem, where every loaded file's top-level code landed in one shared global scope and could silently overwrite or collide with another file's variables of the same name.</p>
+    <p>A file can have any number of <strong>named exports</strong> (<code>add</code> and <code>PI</code> below) plus at most one <strong>default export</strong> — the "main thing" that file provides (<code>Calculator</code> below). On the importing side, a default export can be given any local name you like, while named exports must be imported using their exact exported name, inside <code>{ }</code>:</p>
 <pre><code>// math.js
 export function add(a, b) { return a + b; }
 export const PI = 3.14159;
@@ -666,6 +668,7 @@ export default class Calculator { /* ... */ }
 // app.js
 import Calculator, { add, PI } from "./math.js";</code></pre>
     <p>This replaces the old CommonJS <code>require()</code>/<code>module.exports</code> style you may remember from early Node. You'll meet both — see <a href="#node-modules-system">CommonJS vs ESM in Node</a> in Part 2.</p>
+    <div class="box csharp"><span class="box-title">🔷 C#/Java comparison</span>Close to C#'s <code>namespace</code>/<code>using</code> or Java's <code>package</code>/<code>import</code> in spirit — controlling what's visible across files — but more file-grained: there's no separate namespace declaration, the file itself is the unit of scope, and what's exposed is opt-in per <code>export</code> rather than opt-out via access modifiers.</div>
   </section>
 
   <section id="js-new">
@@ -1332,6 +1335,7 @@ async function getGitHubUser(username: string) {
 
   <details class="log" id="changelog">
     <summary>Changelog (this is a living doc — track updates here)</summary>
+    <p style="margin-top:10px;"><strong>2026-07-20</strong> — Expanded "ES Modules" (Part 1) with a short intro on what a module actually is (file-scoped by default, opt-in via <code>export</code>), the named-vs-default export distinction, and a C#/Java <code>namespace</code>/<code>package</code> comparison, ahead of the existing <code>math.js</code>/<code>app.js</code> example.</p>
     <p style="margin-top:10px;"><strong>2026-07-20</strong> — Rewrote the start of "Promises &amp; async/await" (Part 1) to explain the concept before the code: what a Promise object and its three states (pending/fulfilled/rejected) actually are, the older <code>.then()</code>/<code>.catch()</code> style, and what <code>async</code> and <code>await</code> each individually do — including the non-blocking point (only the <code>async</code> function pauses, not the whole program) — all placed ahead of the existing <code>getUser</code> example.</p>
     <p style="margin-top:10px;"><strong>2026-07-20</strong> — Expanded "Array &amp; object methods" (Part 1) with a from-scratch breakdown of the <code>%</code> (modulo) operator — what a remainder is, why <code>n % 2 === 0</code> means "even" — a call-by-call walkthrough of <code>reduce</code> explaining <code>acc</code> (the accumulator) and how the initial value flows through each call, and a table showing why <code>find</code> stops and returns only its first match instead of every matching element.</p>
     <p><strong>2026-07-20</strong> — Added Part 5, "Designing &amp; Consuming Web Services": Express 5 + TypeScript project setup via WebStorm's UI (npm tool window, no terminal), project structure/tsconfig for Node, a first typed route, Run/Debug + breakpoint debugging, REST design fundamentals (methods, status codes, URL naming), typed routing with Express's <code>Request&lt;Params, ResBody, ReqBody, Query&gt;</code> generics, middleware, Express 5's automatic async error forwarding, a brief <code>zod</code> validation intro, testing endpoints with WebStorm's built-in <code>.http</code> HTTP Client (environment files, chained requests, assertions — the GUI alternative to curl/Postman), and consuming an external API with typed <code>fetch</code>. Updated the cheat sheet and next-steps list to match.</p>
